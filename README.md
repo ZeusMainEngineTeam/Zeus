@@ -2,14 +2,9 @@
 <h3 align="center">Zeus Game Engine</h3>
 <p align="center">A cross-platform game engine written in modern C++17 from <u>scratch</u>.</p>
 <p align="center">
-  ![Microsoft Windows Logo](/resource/microsoft-48.png)
-  ![Linux Logo](/resource/linux-48.png)
   <img src="/resource/microsoft-48.png" alt="Microsoft Windows Logo"/>
   <img src="/resource/linux-48.png" alt="Linux Logo"/>
 </p>
-<!--
-<img src="/resource/Zeus_Game_Engine_Logo.jpg" width="500px" height="400px"/>
--->
 
 # Summary
 
