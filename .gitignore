@@ -37,7 +37,7 @@
 .clang-format
 
 # Special Files
-include/Zeus/config.hpp
+engine/include/zeus/config.hpp
 
 # Default build directory
 build/
