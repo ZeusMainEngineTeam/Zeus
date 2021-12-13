@@ -1,0 +1,5 @@
+function(AddZeusSources)
+    foreach(arg ${ARGV})
+        target_sources(Zeus PRIVATE "${arg}")
+    endforeach()
+endfunction(AddZeusSources)
