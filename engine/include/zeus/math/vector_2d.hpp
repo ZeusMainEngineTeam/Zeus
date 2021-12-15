@@ -43,7 +43,9 @@ struct BasicVector2D {
     using value_type = T;
     using reference = value_type&;
     using const_reference = value_type const&;
+
     using this_type = BasicVector2D<value_type>;
+
     using size_type = Zeus::ssize;
 
     /**
@@ -63,12 +65,12 @@ struct BasicVector2D {
      * @param position The position to retrieve an element inside this
      * vector
      *
-     * @return a reference to the specified element
+     * @return A reference to the specified element
      */
     [[nodiscard]] constexpr reference operator[](size_type position) noexcept {
         ZEUS_ASSERT(position <= 1 && position >= 0);
 
-        return (&(this->x))[position];
+        return &(this->x)[position];
     }
 
     /**
@@ -78,19 +80,19 @@ struct BasicVector2D {
      * @param position The position to retrieve an element inside this
      * vector
      *
-     * @return a constant reference to the specified element
+     * @return A constant reference to the specified element
      */
     [[nodiscard]] constexpr const_reference operator[](
         size_type position) const noexcept {
         ZEUS_ASSERT(position <= 1 && position >= 0);
 
-        return (&(this->x))[position];
+        return &(this->x)[position];
     }
 
     /**
-     * Returns a vector with maximum values.
+     * Returns a vector with the maximum value for all values.
      *
-     * @return
+     * @return A vector with maximum values
      */
     [[nodiscard]] static constexpr this_type max() noexcept {
         return this_type{std::numeric_limits<value_type>::max(),
@@ -98,9 +100,9 @@ struct BasicVector2D {
     }
 
     /**
-     * Returns a vector with minimum values.
+     * Returns a vector with the minimum value for all values.
      *
-     * @return
+     * @return A vector with minimum values
      */
     [[nodiscard]] static constexpr this_type min() noexcept {
         return this_type{std::numeric_limits<value_type>::min(),
@@ -131,14 +133,14 @@ struct BasicVector2D {
 };
 
 /**
- * Compares the two given 2D vectors.
+ * Checks if the two given vectors are equal.
  *
- * @tparam T
+ * @tparam T The coordinate type for the two given vectors
  *
- * @param lhs
- * @param rhs
+ * @param lhs The left-hand side of the expression
+ * @param rhs The right-hand side of the expression
  *
- * @return true if they are the same, otherwise false
+ * @return True if they are equal, otherwise false
  */
 template <typename T>
 constexpr bool operator==(BasicVector2D<T> const& lhs,
@@ -147,14 +149,14 @@ constexpr bool operator==(BasicVector2D<T> const& lhs,
 }
 
 /**
- * Computes the dot product of the two given 2D vectors.
+ * Checks if the two given vectors are not equal.
  *
- * @tparam T
+ * @tparam T The coordinate type for the two given vectors
  *
- * @param lhs
- * @param rhs
+ * @param lhs The left-hand side of the expression
+ * @param rhs The right-hand side of the expression
  *
- * @return
+ * @return True if they are not equal, otherwise false
  */
 template <typename T>
 constexpr bool operator!=(BasicVector2D<T> const& lhs,
@@ -163,15 +165,18 @@ constexpr bool operator!=(BasicVector2D<T> const& lhs,
 }
 
 /**
- * Adds the given vector to this vector.
+ * Adds the given right-hand side vector to the left-hand side vector.
  *
- * @param other The vector to add to this vector
+ * @tparam T The coordinate type for the two given vectors
  *
- * @return a reference to this vector
+ * @param lhs The left-hand side of the expression
+ * @param rhs The right-hand side of the expression
+ *
+ * @return A reference to the left-hand side vector
  */
 template <typename T>
-constexpr BasicVector2D<T>& operator+=(BasicVector2D<T>& lhs,
-                                       BasicVector2D<T> const& rhs) noexcept {
+constexpr auto& operator+=(BasicVector2D<T>& lhs,
+                           BasicVector2D<T> const& rhs) noexcept {
     lhs.x += rhs.x;
     lhs.y += rhs.y;
 
@@ -179,15 +184,18 @@ constexpr BasicVector2D<T>& operator+=(BasicVector2D<T>& lhs,
 }
 
 /**
- * Subtracts the given vector to this vector.
+ * Subtracts the given right-hand side vector to the left-hand side vector.
  *
- * @param other The vector to subtract from this vector
+ * @tparam T The coordinate type for the two given vectors
  *
- * @return a reference to this vector
+ * @param lhs The left-hand side of the expression
+ * @param rhs The right-hand side of the expression
+ *
+ * @return A reference to the left-hand side vector
  */
 template <typename T>
-constexpr BasicVector2D<T>& operator-=(BasicVector2D<T>& lhs,
-                                       BasicVector2D<T> const& rhs) noexcept {
+constexpr auto& operator-=(BasicVector2D<T>& lhs,
+                           BasicVector2D<T> const& rhs) noexcept {
     lhs.x -= rhs.x;
     lhs.y -= rhs.y;
 
@@ -195,15 +203,17 @@ constexpr BasicVector2D<T>& operator-=(BasicVector2D<T>& lhs,
 }
 
 /**
- * Multiplies this vector by the given vector.
+ * Multiplies the given vector by the given scalar.
  *
- * @param other The vector to multiply this vector
+ * @tparam T The coordinate type for the given vector
  *
- * @return a reference to this vector
+ * @param lhs       The vector to be multiplied
+ * @param scalar    The scalar value to multiply the given vector
+ *
+ * @return A reference to the given vector
  */
 template <typename T>
-constexpr BasicVector2D<T>& operator*=(BasicVector2D<T>& lhs,
-                                       T scalar) noexcept {
+constexpr auto& operator*=(BasicVector2D<T>& lhs, T scalar) noexcept {
     lhs.x *= scalar;
     lhs.y *= scalar;
 
@@ -211,73 +221,31 @@ constexpr BasicVector2D<T>& operator*=(BasicVector2D<T>& lhs,
 }
 
 /**
- * Divides this vector by the given vector.
+ * Divides the given vector by the given scalar.
  *
- * @param other The vector to divide this vector
+ * @tparam T The coordinate type for the given vector
  *
- * @return a reference to this vector
+ * @param lhs       The vector to be divided
+ * @param scalar    The scalar value to divide the given vector
+ *
+ * @return A reference to the given vector
  */
 template <typename T>
-constexpr BasicVector2D<T>& operator/=(BasicVector2D<T>& lhs,
-                                       T scalar) noexcept {
-    auto const scale = 1.0f / scalar;
-
-    lhs.x *= scale;
-    lhs.y *= scale;
+constexpr auto& operator/=(BasicVector2D<T>& lhs, T scalar) noexcept {
+    lhs *= static_cast<T>(1.0f / scalar);
 
     return lhs;
 }
 
 /**
- * Returns a reference to an element inside this vector.
+ * Adds the two given vectors together.
  *
- * @param position The position to retrieve an element inside this
- * vector
- *
- * @throws std::out_of_range if the specified position is out of bounds
- *
- * @return a reference to the specified element
- */
-template <typename T>
-[[nodiscard]] constexpr typename BasicVector2D<T>::reference at(
-    BasicVector2D<T>& vector, typename BasicVector2D<T>::size_type position) {
-    if (position > 1 || position < 0) {
-        throw std::out_of_range("Index out of bounds.");
-    }
-
-    return vector[position];
-}
-
-/**
- * Returns a constant reference to an element inside this vector.
- *
- * @param position The position to retrieve an element inside this
- * vector
- *
- * @throws std::out_of_range if the specified position is out of bounds
- *
- * @return a constant reference to the specified element
- */
-template <typename T>
-[[nodiscard]] constexpr typename BasicVector2D<T>::const_reference at(
-    BasicVector2D<T> const& vector,
-    typename BasicVector2D<T>::size_type position) {
-    if (position > 1 || position < 0) {
-        throw std::out_of_range("Index out of bounds.");
-    }
-
-    return vector[position];
-}
-
-/**
- * Adds two 2D vectors together.
- *
- * @tparam T The floating-point type for the vectors
+ * @tparam T The coordinate type for the two given vectors
  *
  * @param lhs The left-hand side of the expression
  * @param rhs The right-hand side of the expression
  *
- * @return a new 2D vector containing the sum
+ * @return A new 2D vector containing the sum
  */
 template <typename T>
 [[nodiscard]] constexpr BasicVector2D<T> operator+(
@@ -286,9 +254,9 @@ template <typename T>
 }
 
 /**
- * Subtracts two 2D vectors together.
+ * Subtracts the two given vectors together.
  *
- * @tparam T The floating-point type for the vectors
+ * @tparam T The coordinate type for the two given vectors
  *
  * @param lhs The left-hand side of the expression
  * @param rhs The right-hand side of the expression
@@ -302,9 +270,9 @@ template <typename T>
 }
 
 /**
- * Multiplies a 2D vector by a scalar value.
+ * Multiplies the given vector by the given scalar value.
  *
- * @tparam T The floating-point type for the vector
+ * @tparam T The coordinate type for the given vector
  *
  * @param vec    The vector to multiply
  * @param scalar The scalar to multiply the vector by
@@ -318,9 +286,9 @@ template <typename T>
 }
 
 /**
- * Multiplies a 2D vector by a scalar value.
+ * Multiplies the given vector by the given scalar value.
  *
- * @tparam T The floating-point type for the vector
+ * @tparam T The coordinate type for the two given vectors
  *
  * @param scalar The scalar to multiply the vector by
  * @param vec    The vector to multiply
@@ -334,9 +302,9 @@ template <typename T>
 }
 
 /**
- * Divides a 2D vector by a scalar value.
+ * Divides the given 2D vector by the given scalar value.
  *
- * @tparam T The floating-point type for the vector
+ * @tparam T The coordinate type for the given vector
  *
  * @param scalar The scalar to divide the vector by
  * @param vec    The vector to divide
@@ -346,15 +314,15 @@ template <typename T>
 template <typename T>
 [[nodiscard]] constexpr BasicVector2D<T> operator/(BasicVector2D<T> const& vec,
                                                    T scalar) noexcept {
-    T const scale = 1.0F / scalar;
+    T const scale = static_cast<T>(1.0f / scalar);
 
     return BasicVector2D<T>{vec.x * scalar, vec.y * scalar};
 }
 
 /**
- * Flips the vector's values.
+ * Changes the sign of all of the values in the given vector.
  *
- * @tparam T The floating-point type for the vector
+ * @tparam T The coordinate type for the given vector
  *
  * @param vec The vector to operate on
  *
@@ -369,7 +337,7 @@ template <typename T>
 /**
  * Returns the magnitude of the given 2D vector.
  *
- * @tparam T The floating-point type for the vector
+ * @tparam T The coordinate type for the given vector
  *
  * @param vec The vector to find its magnitude
  *
@@ -384,7 +352,7 @@ template <typename T>
 /**
  * Returns the normalization of the given 2D vector.
  *
- * @tparam T The floating-point type for the vector
+ * @tparam T The coordinate type for the given vector
  *
  * @param vec The vector to normalize
  *
@@ -399,12 +367,12 @@ template <typename T>
 /**
  * Computes the dot product of the two given 2D vectors.
  *
- * @tparam T
+ * @tparam T The coordinate type for the two given vectors
  *
- * @param lhs
- * @param rhs
+ * @param lhs The left-hand side of the expression
+ * @param rhs The right-hand side of the expression
  *
- * @return
+ * @return The dot product
  */
 template <typename T>
 [[nodiscard]] constexpr T dot(BasicVector2D<T> const& lhs,
@@ -418,5 +386,51 @@ template <typename T>
 using Vector2D = BasicVector2D<f32>;
 
 }  // namespace Math
+
+/**
+ * Returns a reference to an element inside this vector.
+ *
+ * @tparam T The coordinate type for the given vector
+ *
+ * @param position The position to retrieve an element inside this
+ * vector
+ *
+ * @throws std::out_of_range if the specified position is out of bounds
+ *
+ * @return A reference to the specified element
+ */
+template <typename T>
+[[nodiscard]] constexpr auto& at(
+    Math::BasicVector2D<T>& vector,
+    typename Math::BasicVector2D<T>::size_type position) {
+    if (position > 1 || position < 0) {
+        throw std::out_of_range("Index out of bounds.");
+    }
+
+    return vector[position];
+}
+
+/**
+ * Returns a constant reference to an element inside this vector.
+ *
+ * @tparam T The coordinate type for the given vector
+ *
+ * @param position The position to retrieve an element inside this
+ * vector
+ *
+ * @throws std::out_of_range if the specified position is out of bounds
+ *
+ * @return A constant reference to the specified element
+ */
+template <typename T>
+[[nodiscard]] constexpr auto const& at(
+    Math::BasicVector2D<T> const& vector,
+    typename Math::BasicVector2D<T>::size_type position) {
+    if (position > 1 || position < 0) {
+        throw std::out_of_range("Index out of bounds.");
+    }
+
+    return vector[position];
+}
 
 }  // namespace Zeus
