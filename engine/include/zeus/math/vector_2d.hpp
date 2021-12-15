@@ -392,7 +392,8 @@ using Vector2D = BasicVector2D<f32>;
  *
  * @tparam T The coordinate type for the given vector
  *
- * @param position The position to retrieve an element inside this
+ * @param vec       The vector to retrieve the element from
+ * @param position  The position to retrieve an element inside this
  * vector
  *
  * @throws std::out_of_range if the specified position is out of bounds
@@ -401,13 +402,13 @@ using Vector2D = BasicVector2D<f32>;
  */
 template <typename T>
 [[nodiscard]] constexpr auto& at(
-    Math::BasicVector2D<T>& vector,
+    Math::BasicVector2D<T>& vec,
     typename Math::BasicVector2D<T>::size_type position) {
     if (position > 1 || position < 0) {
         throw std::out_of_range("Index out of bounds.");
     }
 
-    return vector[position];
+    return vec[position];
 }
 
 /**
@@ -415,7 +416,8 @@ template <typename T>
  *
  * @tparam T The coordinate type for the given vector
  *
- * @param position The position to retrieve an element inside this
+ * @param vec       The vector to retrieve the element from
+ * @param position  The position to retrieve an element inside this
  * vector
  *
  * @throws std::out_of_range if the specified position is out of bounds
@@ -424,13 +426,13 @@ template <typename T>
  */
 template <typename T>
 [[nodiscard]] constexpr auto const& at(
-    Math::BasicVector2D<T> const& vector,
+    Math::BasicVector2D<T> const& vec,
     typename Math::BasicVector2D<T>::size_type position) {
     if (position > 1 || position < 0) {
         throw std::out_of_range("Index out of bounds.");
     }
 
-    return vector[position];
+    return vec[position];
 }
 
 }  // namespace Zeus
