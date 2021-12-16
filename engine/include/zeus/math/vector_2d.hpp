@@ -70,7 +70,7 @@ struct BasicVector2D {
     [[nodiscard]] constexpr reference operator[](size_type position) noexcept {
         ZEUS_ASSERT(position <= 1 && position >= 0);
 
-        return &(this->x)[position];
+        return (&(this->x))[position];
     }
 
     /**
@@ -86,7 +86,7 @@ struct BasicVector2D {
         size_type position) const noexcept {
         ZEUS_ASSERT(position <= 1 && position >= 0);
 
-        return &(this->x)[position];
+        return (&(this->x))[position];
     }
 
     /**
