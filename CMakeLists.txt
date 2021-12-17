@@ -26,8 +26,10 @@ endif()
 # Some options depend on previous options
 include(CMakeDependentOption)
 
-option(ZEUS_BUILD_EXAMPLES "Builds examples for Zeus." ON)
 option(ZEUS_BUILD_DOCS "Builds docs for Zeus." ON)
+
+option(ZEUS_BUILD_EXAMPLES "Builds examples for Zeus." ON)
+cmake_dependent_option(ZEUS_ENABLE_VALGRIND_ON_EXAMPLES "Sets up Valgrind for code examples for Zeus." ON "ZEUS_BUILD_EXAMPLES" OFF)
 
 option(ZEUS_BUILD_TESTS "Builds tests for Zeus." ON)
 cmake_dependent_option(ZEUS_BUILD_UNIT_TESTS "Builds unit tests for Zeus." ON "ZEUS_BUILD_TESTS" OFF)
@@ -55,10 +57,39 @@ cmake_dependent_option(ZEUS_ENABLE_LEAK_SANITIZER "Enables leak sanitizer for de
 #                                                                              #
 ################################################################################
 
+# Check for PowerShell since a lot of cross-platform commands and scripts are 
+# written in PowerShell
+find_program(PWSH NAMES pwsh powershell)
+
+if(NOT PWSH)
+    message(WARNING "Could not find PowerShell. A lot of custom targets will not be built!")
+endif()
+
 if(ZEUS_BUILD_TESTS)
     # Allows for running test from the root of the build directory
     # 'make test' to run all tests
     enable_testing()
+
+    if(ZEUS_ENABLE_VALGRIND_ON_TESTS AND PWSH)
+        # Enables ctest -T memcheck (automatically locates valgrind)
+        # Generates DartConfiguration file needed to run
+        include(CTest)
+
+        # Create custom command to run ctest -T memcheck and print out valgrind results for unit tests
+        add_custom_target(unit_test_memcheck
+            # Start in binary directory of project
+            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+
+            # Run ctest -T memcheck
+            COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --test-action memcheck
+
+            # Print out log files written to by CTest
+            # Runs the PowerShell command equivalent to Linux's cat
+            #
+            # Note: MemoryChecker.<#>.log where '#' is the unit test number
+            COMMAND ${PWSH} --Command cat "${CMAKE_BINARY_DIR}/Testing/Temporary/MemoryChecker.*.log"
+        )
+    endif()
 endif()
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/engine")
