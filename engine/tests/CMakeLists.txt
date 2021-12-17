@@ -2,9 +2,6 @@
 # 
 # Manages unit tests and integration tests
 
-# Turn on testing
-enable_testing()
-
 ################################################################################
 #                                                                              #
 # Add GoogleTest To Project                                                    #

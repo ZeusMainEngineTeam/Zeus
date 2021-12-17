@@ -55,4 +55,10 @@ cmake_dependent_option(ZEUS_ENABLE_LEAK_SANITIZER "Enables leak sanitizer for de
 #                                                                              #
 ################################################################################
 
+if(ZEUS_BUILD_TESTS)
+    # Allows for running test from the root of the build directory
+    # 'make test' to run all tests
+    enable_testing()
+endif()
+
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/engine")
