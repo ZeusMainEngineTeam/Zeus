@@ -171,4 +171,4 @@ This project currently uses the GPLv3 license.  Please look at the [LICENSE](LIC
 
 # Project Status
 
-The project currently is in its early stages.  Changes make take a while.  Please be patient :)
+The project currently is in its early stages.  Changes make take a while.  Please be patient :) .
