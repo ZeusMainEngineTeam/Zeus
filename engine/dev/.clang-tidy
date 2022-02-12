@@ -1,0 +1,6 @@
+{
+  "Checks": "-*,-abseil*,-android*,-fuchsia-overloaded-operator,-fuchsia-trailing-return,-fuchsia-multiple-inheritance,bugprone-*,cert-*,cppcoreguidelines-*,clang-analyzer-cplusplus*,-clang-analyzer-osx*,misc-*,modernize-*,-modernize-use-trailing-return-type,performance-*,portability-*,readability-*,hicpp-*,llvm-*,-llvm-header-guard,-llvm-include-order,google-*",
+  "WarningsAsErrors": "",
+  "HeaderFilterRegex": "",
+  "FormatStyle": "none"
+}

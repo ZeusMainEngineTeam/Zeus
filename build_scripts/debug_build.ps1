@@ -5,7 +5,8 @@ function Build-Debug-Project {
     Write-Output "Calling CMake..."
 
     # Call CMake to build project
-    Invoke-Expression -command "cmake -S ${PSScriptRoot}/.. -B ${PSScriptRoot}/../build -DCMAKE_BUILD_TYPE=Debug"
+    # CMAKE_EXPORT_COMPILE_COMAMNDS is for clang-tidy
+    Invoke-Expression -command "cmake -S ${PSScriptRoot}/.. -B ${PSScriptRoot}/../build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
 }
 
 Build-Debug-Project

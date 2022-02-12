@@ -9,9 +9,6 @@ project(Zeus
     VERSION 1.0.0
 )
 
-# Add our cmake files to the module path for the project
-#list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build: None, Debug, Release, RelWithDebInfo, MinSizeRel." FORCE)
     message(WARNING "Build type is defaulted to Debug.")
@@ -40,6 +37,8 @@ cmake_dependent_option(ZEUS_BUILD_INTEGRATION_TESTS "Builds integration tests fo
 cmake_dependent_option(ZEUS_ENABLE_VALGRIND_ON_TESTS "Sets up Valgrind for unit and integration tests for Zeus." ON "ZEUS_BUILD_TESTS" OFF)
 
 option(ZEUS_DEBUGGING "Turn on debugging in Zeus." ON)
+
+option(ZEUS_ENABLE_CLANG_TIDY "Turn on clang-tidy in Zeus." ON)
 
 # Runs Google C++ style guide checker before project is built
 option(ZEUS_ENABLE_STYLE_CHECK "Enables C++ style checking." ON)

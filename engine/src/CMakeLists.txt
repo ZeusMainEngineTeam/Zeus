@@ -1,7 +1,7 @@
 # engine/src/CMakeLists.txt
 
 # Add our cmake files to the module path for the project
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+#list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 ################################################################################
 #                                                                              #
@@ -38,6 +38,15 @@ set_target_properties(Zeus
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+
+if(ZEUS_ENABLE_CLANG_TIDY)
+    message(STATUS "clang-tidy enabled for Zeus.")
+
+    set_target_properties(Zeus
+        PROPERTIES
+            CXX_CLANG_TIDY "clang-tidy;-header-filter=.*;-checks=-*,-abseil*,-android*,-fuchsia-overloaded-operator,-fuchsia-trailing-return,-fuchsia-multiple-inheritance,bugprone-*,cert-*,cppcoreguidelines-*,clang-analyzer-cplusplus*,-clang-analyzer-osx*,misc-*,modernize-*,-modernize-use-trailing-return-type,performance-*,portability-*,readability-*,hicpp-*,llvm-*,-llvm-header-guard,-llvm-include-order,google-*;-warnings-as-errors=*"
+    )
+endif()
 
 target_include_directories(Zeus
     PUBLIC
