@@ -110,12 +110,21 @@ struct BasicVector2D {
     }
 
     /**
+     * Returns a vector with zero for all values.
+     *
+     * @return A vector with minimum values
+     */
+    [[nodiscard]] static constexpr this_type zero() noexcept {
+        return this_type{value_type{0}, value_type{0}};
+    }
+
+    /**
      * Returns a vector with positive infinity for all values.
      *
      * @return A positive infinity vector
      */
     template <typename = Zeus::Math::enable_if_can_use_infinity_t<value_type>>
-    [[nodiscard]] static constexpr this_type positive_infinity() noexcept {
+    [[nodiscard]] static constexpr this_type positiveInfinity() noexcept {
         return this_type{std::numeric_limits<value_type>::infinity(),
                          std::numeric_limits<value_type>::infinity()};
     }
@@ -126,7 +135,7 @@ struct BasicVector2D {
      * @return A negative infinity vector
      */
     template <typename = Zeus::Math::enable_if_can_use_infinity_t<value_type>>
-    [[nodiscard]] static constexpr this_type negative_infinity() noexcept {
+    [[nodiscard]] static constexpr this_type negativeInfinity() noexcept {
         return this_type{-1 * std::numeric_limits<value_type>::infinity(),
                          -1 * std::numeric_limits<value_type>::infinity()};
     }
