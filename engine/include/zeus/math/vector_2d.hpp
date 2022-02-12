@@ -386,7 +386,7 @@ template <typename T>
 template <typename T>
 [[nodiscard]] constexpr T dot(BasicVector2D<T> const& lhs,
                               BasicVector2D<T> const& rhs) noexcept {
-    return (lhs[0] * rhs[0]) + (lhs[1] * rhs[1]);
+    return lhs.x * rhs.x + lhs.y * rhs.y;
 }
 
 /**
