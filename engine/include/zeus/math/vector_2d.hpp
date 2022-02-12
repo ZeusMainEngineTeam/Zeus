@@ -59,6 +59,27 @@ struct BasicVector2D {
     value_type y;
 
     /**
+     * Default constructor.
+     */
+    constexpr BasicVector2D() noexcept = default;
+
+    /**
+     * Constructs a 2D vector using the given x and the given y coordinates.
+     *
+     * @param x The x-coordinate for the vector
+     * @param y The y-coordinate for the vector
+     */
+    constexpr BasicVector2D(value_type x, value_type y) noexcept : x{x}, y{y} {}
+
+    /**
+     * Constructs a 2D vector using the given value for the x and y coordinates.
+     *
+     * @param value The value for the x and y coordinates for the vector
+     */
+    constexpr BasicVector2D(value_type value) noexcept
+        : BasicVector2D{value, value} {}
+
+    /**
      * Returns a reference to an element inside this vector based on the given
      * index.
      *

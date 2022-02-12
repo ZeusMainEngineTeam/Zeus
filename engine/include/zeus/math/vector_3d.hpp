@@ -64,6 +64,29 @@ struct BasicVector3D {
     value_type z;
 
     /**
+     * Default constructor.
+     */
+    constexpr BasicVector3D() noexcept = default;
+
+    /**
+     * Constructs a 3D vector using the given x and the given y coordinates.
+     *
+     * @param x The x-coordinate for the vector
+     * @param y The y-coordinate for the vector
+     */
+    constexpr BasicVector3D(value_type x, value_type y, value_type z) noexcept
+        : x{x}, y{y}, z{z} {}
+
+    /**
+     * Constructs a 3D vector using the given value for the x, y and z
+     * coordinates.
+     *
+     * @param value The value for the x, y and z coordinates for the vector
+     */
+    constexpr BasicVector3D(value_type value) noexcept
+        : BasicVector3D{value, value, value} {}
+
+    /**
      * Returns a reference to an element inside this vector based on the given
      * index.
      *
