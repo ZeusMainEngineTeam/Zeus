@@ -68,7 +68,7 @@ struct is_endian_value_type
 /**
  * Checks if the given type is supported by the endian operations.
  *
- * @note An alias for obtaining the static member function "value" from
+ * @note An alias for obtaining the static member variable "value" from
  * is_endian_value_type.
  *
  * @see is_endian_value_type
