@@ -35,12 +35,14 @@ namespace Zeus {
 
 namespace Memory {
 
+namespace Endian {
+
 /**
  * Contains the endian byte order of this platform.
  *
  * Inspired by C++20's possible implementation.
  */
-enum class Endian {
+enum class Type {
 #if ZEUS_IS_MSVC
     Little = 0,
     Big = 1,
@@ -60,24 +62,23 @@ enum class Endian {
  * @tparam The type to check
  */
 template <typename T>
-struct is_endian_value_type
-    : std::bool_constant<std::is_same_v<T, u8> || std::is_same_v<T, u16> ||
-                         std::is_same_v<T, u32> || std::is_same_v<T, u64> ||
-                         std::is_same_v<T, std::byte>> {};
+struct is_endian_swappable_type
+    : std::bool_constant<std::is_same_v<T, u16> || std::is_same_v<T, u32> ||
+                         std::is_same_v<T, u64>> {};
 
 /**
  * Checks if the given type is supported by the endian operations.
  *
  * @note An alias for obtaining the static member variable "value" from
- * is_endian_value_type.
+ * is_endian_swappable_type.
  *
- * @see is_endian_value_type
+ * @see is_endian_swappable_type
  *
  * @tparam The type to check
  */
 template <typename T>
-inline constexpr bool is_endian_value_type_v =
-    is_endian_value_type<T>::value;
+inline constexpr bool is_endian_swappable_type_v =
+    is_endian_swappable_type<T>::value;
 
 /**
  * Gets the opposite endian encoding of the given Endian value.
@@ -86,42 +87,20 @@ inline constexpr bool is_endian_value_type_v =
  *
  * @return The opposite endian encoding
  */
-[[nodiscard]] ZEUS_FORCE_INLINE inline constexpr Endian getOtherEndian(
-    Endian endian) noexcept {
-    return (endian == Endian::Little) ? Endian::Big : Endian::Little;
+[[nodiscard]] ZEUS_FORCE_INLINE inline constexpr Endian::Type getOtherEndian(
+    Endian::Type endian) noexcept {
+    return (endian == Endian::Type::Little) ? Endian::Type::Big
+                                            : Endian::Type::Little;
 }
 
 /**
  * Reverses the byte-order of the given value.
  *
- * @param value The value to reverse
+ * @param value The value to byte swap
  *
- * @return The reverse byte-order of the given value
+ * @return The swapped byte-order of the given value
  */
-[[nodiscard]] ZEUS_FORCE_INLINE inline constexpr u8 reverse(u8 value) noexcept {
-    return ((value & 0x0F) << 4) | ((value & 0xF0) >> 4);
-}
-
-/**
- * Reverses the byte-order of the given value.
- *
- * @param value The value to reverse
- *
- * @return The reverse byte-order of the given value
- */
-[[nodiscard]] ZEUS_FORCE_INLINE inline constexpr std::byte reverse(
-    std::byte value) noexcept {
-    return std::byte{reverse(std::to_integer<u8>(value))};
-}
-
-/**
- * Reverses the byte-order of the given value.
- *
- * @param value The value to reverse
- *
- * @return The reverse byte-order of the given value
- */
-[[nodiscard]] ZEUS_FORCE_INLINE inline constexpr u16 reverse(
+[[nodiscard]] ZEUS_FORCE_INLINE inline constexpr u16 byteSwap(
     u16 value) noexcept {
     return (value << 8) | (value >> 8);
 }
@@ -129,28 +108,28 @@ inline constexpr bool is_endian_value_type_v =
 /**
  * Reverses the byte-order of the given value.
  *
- * @param value The value to reverse
+ * @param value The value to byte swap
  *
- * @return The reverse byte-order of the given value
+ * @return The swapped byte-order of the given value
  */
-[[nodiscard]] ZEUS_FORCE_INLINE inline constexpr u32 reverse(
+[[nodiscard]] ZEUS_FORCE_INLINE inline constexpr u32 byteSwap(
     u32 value) noexcept {
-    return (reverse(static_cast<u16>((value << 16) >> 16)) << 16) |
-           reverse(static_cast<u16>(value >> 16));
+    return (byteSwap(static_cast<u16>((value << 16) >> 16)) << 16) |
+           byteSwap(static_cast<u16>(value >> 16));
 }
 
 /**
  * Reverses the byte-order of the given value.
  *
- * @param value The value to reverse
+ * @param value The value to byte swap
  *
- * @return The reverse byte-order of the given value
+ * @return The swapped byte-order of the given value
  */
-[[nodiscard]] ZEUS_FORCE_INLINE inline constexpr u64 reverse(
+[[nodiscard]] ZEUS_FORCE_INLINE inline constexpr u64 byteSwap(
     u64 value) noexcept {
-    return (static_cast<u64>(reverse(static_cast<u32>((value << 24) >> 24)))
+    return (static_cast<u64>(byteSwap(static_cast<u32>((value << 24) >> 24)))
             << 32) |
-           reverse(static_cast<u32>(value >> 32));
+           byteSwap(static_cast<u32>(value >> 32));
 }
 
 /**
@@ -164,18 +143,17 @@ inline constexpr bool is_endian_value_type_v =
  *
  * @param source        The endianness of the source
  * @param destination   The endianness of the destination
- * @param value         The value to reverse
+ * @param value         The value to byte swap
  *
- * @return The reverse byte-order of the given value if endianness is different
+ * @return The swapped byte-order of the given value if endianness is different
  */
 template <typename T>
-[[nodiscard]] ZEUS_FORCE_INLINE inline constexpr T reverseIf(Endian source,
-                                                             Endian destination,
-                                                             T value) noexcept {
-    static_assert(is_endian_value_type_v<T>, "Type is not supported.");
+[[nodiscard]] ZEUS_FORCE_INLINE inline constexpr T byteSwapIf(
+    Endian::Type source, Endian::Type destination, T value) noexcept {
+    static_assert(is_endian_swappable_type_v<T>, "Type is not supported.");
 
     if (source != destination) {
-        return reverse(value);
+        return byteSwap(value);
     }
 
     return value;
@@ -188,7 +166,7 @@ template <typename T>
  * @note Will not perform the operation if the native endianness of the machine
  * is little endian. Instead, the value will be returned as is.
  *
- * @see Zeus::Memory::reverseIf
+ * @see Zeus::Memory::byteSwapIf
  *
  * @tparam T The type of the given value
  *
@@ -200,7 +178,7 @@ template <typename T>
 template <typename T>
 [[nodiscard]] ZEUS_FORCE_INLINE inline constexpr T littleToNative(
     T value) noexcept {
-    return reverseIf(Endian::Little, Endian::Native, value);
+    return byteSwapIf(Endian::Type::Little, Endian::Type::Native, value);
 }
 
 /**
@@ -210,7 +188,7 @@ template <typename T>
  * @note Will not perform the operation if the native endianness of the machine
  * is big endian. Instead, the value will be returned as is.
  *
- * @see Zeus::Memory::reverseIf
+ * @see Zeus::Memory::byteSwapIf
  *
  * @tparam T The type of the given value
  *
@@ -222,7 +200,7 @@ template <typename T>
 template <typename T>
 [[nodiscard]] ZEUS_FORCE_INLINE inline constexpr T bigToNative(
     T value) noexcept {
-    return reverseIf(Endian::Big, Endian::Native, value);
+    return byteSwapIf(Endian::Type::Big, Endian::Type::Native, value);
 }
 
 /**
@@ -232,7 +210,7 @@ template <typename T>
  * @note Will not perform the operation if the native endianness of the machine
  * is little endian. Instead, the value will be returned as is.
  *
- * @see Zeus::Memory::reverseIf
+ * @see Zeus::Memory::byteSwapIf
  *
  * @tparam T The type of the given value
  *
@@ -244,7 +222,7 @@ template <typename T>
 template <typename T>
 [[nodiscard]] ZEUS_FORCE_INLINE inline constexpr T nativeToLittle(
     T value) noexcept {
-    return reverseIf(Endian::Native, Endian::Little, value);
+    return byteSwapIf(Endian::Type::Native, Endian::Type::Little, value);
 }
 
 /**
@@ -254,7 +232,7 @@ template <typename T>
  * @note Will not perform the operation if the native endianness of the machine
  * is big endian. Instead, the value will be returned as is.
  *
- * @see Zeus::Memory::reverseIf
+ * @see Zeus::Memory::byteSwapIf
  *
  * @tparam T The type of the given value
  *
@@ -266,8 +244,10 @@ template <typename T>
 template <typename T>
 [[nodiscard]] ZEUS_FORCE_INLINE inline constexpr T nativeToBig(
     T value) noexcept {
-    return reverseIf(Endian::Native, Endian::Big, value);
+    return byteSwapIf(Endian::Type::Native, Endian::Type::Big, value);
 }
+
+}  // namespace Endian
 
 }  // namespace Memory
 
@@ -279,8 +259,8 @@ template <typename T>
  * @return The string representation of the given Endian value
  */
 [[nodiscard]] ZEUS_FORCE_INLINE inline std::string to_string(
-    Zeus::Memory::Endian endian) noexcept {
-    return (endian == Zeus::Memory::Endian::Little) ? "Little" : "Big";
+    Zeus::Memory::Endian::Type endian) noexcept {
+    return (endian == Zeus::Memory::Endian::Type::Little) ? "Little" : "Big";
 }
 
 }  // namespace Zeus
@@ -295,6 +275,6 @@ template <typename T>
  * @return A reference to the given output stream
  */
 inline std::ostream& operator<<(std::ostream& stream,
-                                Zeus::Memory::Endian endian) noexcept {
+                                Zeus::Memory::Endian::Type endian) noexcept {
     return stream << Zeus::to_string(endian);
 }
