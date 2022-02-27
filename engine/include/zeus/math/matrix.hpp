@@ -18,9 +18,12 @@
 
 #pragma once
 
+#include <array>
+
 #include "zeus/core/assert.hpp"
 #include "zeus/core/types.hpp"
 #include "zeus/math/type_traits.hpp"
+
 
 /**
  * @file matrix.hpp
@@ -30,9 +33,34 @@ namespace Zeus {
 
 namespace Math {
 
-struct Matrix {
 
-} // namespace Matrix
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+template <typename T, ssize M, ssize N>
+class Matrix {
+
+    public:
+        static_assert(M > 0 && N > 0, "Dimensions of a matrix cannot be negative!");
+        using value_type = T;
+        using reference = value_type&;
+        using const_reference = value_type const&;
+        using this_type = Matrix<value_type, M, N>;
+        using size_type = Zeus::ssize;
+        
+        Matrix() = default;
+        ~Matrix() = default;
+        [[nodiscard]] constexpr size_type size() const noexcept{return M * N;};
+
+    private:
+        std::array<std::array <int, M>, N> m_data = {};
+        
+
+};
+
+
+
+
+
+
 
 } // namespace Math
 

@@ -1,0 +1,8 @@
+# examples/core/math/vector/CMakeLists.txt
+
+
+add_executable(vectors_example
+    "${CMAKE_CURRENT_SOURCE_DIR}/matrix.cpp"
+)
+
+add_zeus_example(matrix_example)

@@ -38,7 +38,7 @@ cmake_dependent_option(ZEUS_ENABLE_VALGRIND_ON_TESTS "Sets up Valgrind for unit 
 
 option(ZEUS_DEBUGGING "Turn on debugging in Zeus." ON)
 
-option(ZEUS_ENABLE_CLANG_TIDY "Turn on clang-tidy in Zeus." ON)
+option(ZEUS_ENABLE_CLANG_TIDY "Turn on clang-tidy in Zeus." OFF)
 
 # Runs Google C++ style guide checker before project is built
 option(ZEUS_ENABLE_STYLE_CHECK "Enables C++ style checking." ON)
