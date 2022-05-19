@@ -17,7 +17,7 @@ add_executable(Zeus
 #include(AddZeusSource)
 
 # Add source files in modules
-#add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/core")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/cli")
 
 ################################################################################
 #                                                                              #

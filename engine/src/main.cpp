@@ -17,12 +17,22 @@
  */
 
 #include <iostream>
+#include <algorithm>
 
 #include "zeus/config.hpp"
+#include "zeus/cli/cli.hpp"
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
+int main(int argc, char* argv[]) {
     std::cout << "Zeus Version: " << ZEUS_VERSION_MAJOR << '.'
               << ZEUS_VERSION_MINOR << '.' << ZEUS_VERSION_PATCH << '\n';
 
+    auto const arguments = Zeus::CLI::parseCommandLine(argc, argv);
+
+    //std::for_each(std::begin(arguments), std::end(arguments), Zeus::to_string);
+
     return EXIT_SUCCESS;
 }
+
+
+
+
