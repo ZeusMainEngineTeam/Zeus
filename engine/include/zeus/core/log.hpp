@@ -38,11 +38,11 @@ class Log {
      * @note The order of the levels is in order of importance.
      */
     enum class Level {
-        Error = 4,
-        Warning = 3,
-        Info = 2,
-        Config = 1,
-        Debug = 0
+        eError = 4,
+        eWarning = 3,
+        eInfo = 2,
+        eConfig = 1,
+        eDebug = 0
     };
 
     /**

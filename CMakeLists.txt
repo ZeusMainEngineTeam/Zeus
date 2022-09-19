@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
 
 project(Zeus
-    DESCRIPTION "A cross-platform 3D game engine written in modern C++17 from scratch."
+    DESCRIPTION "A cross-platform 3D game engine written in modern C++20 from scratch."
     LANGUAGES CXX
     VERSION 1.0.0
 )
@@ -23,12 +23,12 @@ endif()
 # Some options depend on previous options
 include(CMakeDependentOption)
 
-option(ZEUS_BUILD_DOCS "Builds docs for Zeus." ON)
+option(ZEUS_BUILD_DOCS "Builds docs for Zeus." OFF)
 
-option(ZEUS_BUILD_EXAMPLES "Builds examples for Zeus." ON)
+option(ZEUS_BUILD_EXAMPLES "Builds examples for Zeus." OFF)
 cmake_dependent_option(ZEUS_ENABLE_VALGRIND_ON_EXAMPLES "Sets up Valgrind for code examples for Zeus." ON "ZEUS_BUILD_EXAMPLES" OFF)
 
-option(ZEUS_BUILD_TESTS "Builds tests for Zeus." ON)
+option(ZEUS_BUILD_TESTS "Builds tests for Zeus." OFF)
 cmake_dependent_option(ZEUS_BUILD_UNIT_TESTS "Builds unit tests for Zeus." ON "ZEUS_BUILD_TESTS" OFF)
 cmake_dependent_option(ZEUS_ENABLE_COVERAGE_ON_UNIT_TESTS "Enables code coverage on unit tests." ON "ZEUS_BUILD_TESTS;ZEUS_BUILD_UNIT_TESTS" OFF)
 

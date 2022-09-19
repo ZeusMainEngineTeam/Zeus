@@ -23,23 +23,30 @@
  */
 
 // Make into string literal
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ZEUS_STR(x) #x
 
 // Concatenate two arguments together
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ZEUS_CAT(A, B) A##B
 
 // Creates NAME_NUM output
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ZEUS_SELECT(NAME, NUM) ZEUS_CAT(NAME##_, NUM)
 
 // Binds NAME to the given ARGS
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ZEUS_BIND(NAME, ARGS) NAME ARGS
 
 // ZEUS_VA_SIZE helper to get __VA_ARGS__ count
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ZEUS_GET_COUNT(_1, _2, _3, _4, _5, _6, COUNT, ...) COUNT
 
 // Gets the number of arguments from __VA_ARGS__
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ZEUS_VA_SIZE(...) ZEUS_GET_COUNT(__VA_ARGS__, 6, 5, 4, 3, 2, 1, -1)
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ZEUS_VA_SELECT(NAME, ...)                \
     ZEUS_SELECT(NAME, ZEUS_VA_SIZE(__VA_ARGS__)) \
     (__VA_ARGS__)

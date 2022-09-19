@@ -71,13 +71,16 @@ ZEUS_FORCE_INLINE inline void assert_condition(
 
 }  // namespace Zeus
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ZEUS_ASSERT_2(ASSERTION, MESSAGE)                                     \
     Zeus::assert_condition(ASSERTION, ZEUS_STR(ASSERTION), MESSAGE, __FILE__, \
                            __LINE__)
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ZEUS_ASSERT_1(ASSERTION) ZEUS_ASSERT_2(ASSERTION, std::nullopt)
 
 #ifdef ZEUS_DEBUG
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ZEUS_ASSERT(...) ZEUS_VA_SELECT(ZEUS_ASSERT, __VA_ARGS__)
 #else
 #define ZEUS_ASSERT(...)

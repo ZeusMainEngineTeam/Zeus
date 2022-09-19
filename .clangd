@@ -1,0 +1,11 @@
+---
+CompileFlags:                                                           # Tweak the parse settings
+  Add: [-Wall, -Wextra, -pedantic, -Werror, -Wfatal-errors]             # Enable more warnings
+  Compiler: clang++                                                     # Change argv[0] of compile flags to `clang++`
+Diagnostics:
+  UnusedIncludes: Strict
+  ClangTidy:
+    CheckOptions:
+      readability-identifier-naming.ClassCase: CamelCase
+        #Add: [modernize*]
+        #Remove: [modernize-use-trailing-return-type]

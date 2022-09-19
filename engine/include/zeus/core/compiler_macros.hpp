@@ -22,6 +22,7 @@
  * @file compiler_macros.hpp
  */
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
 #if defined(__GNUC__)
 #define ZEUS_IS_GCC 1
 #else
@@ -59,3 +60,4 @@
 #endif
 
 #define ZEUS_ERROR(x) static_assert(false, x);
+// NOLINTEND(cppcoreguidelines-macro-usage)

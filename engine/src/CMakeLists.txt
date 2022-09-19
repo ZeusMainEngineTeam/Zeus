@@ -14,10 +14,10 @@ add_executable(Zeus
 )
 
 # Simple function to add source files to the Zeus target
-#include(AddZeusSource)
+include(AddZeusSources)
 
 # Add source files in modules
-#add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/core")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/string")
 
 ################################################################################
 #                                                                              #
@@ -31,7 +31,7 @@ configure_file("${PROJECT_SOURCE_DIR}/engine/cmake/config.hpp.in" "${PROJECT_SOU
 set_target_properties(Zeus
     PROPERTIES
         SUFFIX "_${CMAKE_CXX_COMPILER_ID}_${CMAKE_SYSTEM_NAME}_${Zeus_VERSION_MAJOR}_${Zeus_VERSION_MINOR}_${Zeus_VERSION_PATCH}_${CMAKE_BUILD_TYPE}${CMAKE_EXECUTABLE_SUFFIX}"
-        CXX_STANDARD 17
+        CXX_STANDARD 20
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -39,14 +39,14 @@ set_target_properties(Zeus
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-if(ZEUS_ENABLE_CLANG_TIDY)
-    message(STATUS "clang-tidy enabled for Zeus.")
-
-    set_target_properties(Zeus
-        PROPERTIES
-            CXX_CLANG_TIDY "clang-tidy;-header-filter=.*;-checks=-*,-abseil*,-android*,-fuchsia-overloaded-operator,-fuchsia-trailing-return,-fuchsia-multiple-inheritance,bugprone-*,cert-*,cppcoreguidelines-*,clang-analyzer-cplusplus*,-clang-analyzer-osx*,misc-*,modernize-*,-modernize-use-trailing-return-type,performance-*,portability-*,readability-*,hicpp-*,llvm-*,-llvm-header-guard,-llvm-include-order,google-*;-warnings-as-errors=*"
-    )
-endif()
+#if(ZEUS_ENABLE_CLANG_TIDY)
+#    message(STATUS "clang-tidy enabled for Zeus.")
+#
+#    set_target_properties(Zeus
+#        PROPERTIES
+#            CXX_CLANG_TIDY "clang-tidy;--config-file=${PROJECT_SOURCE_DIR}/.clang-tidy"
+#    )
+#endif()
 
 target_include_directories(Zeus
     PUBLIC
