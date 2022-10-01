@@ -19,6 +19,7 @@
 #pragma once
 
 #include <optional>
+#include <stdexcept>
 
 #include "zeus/core/types.hpp"
 #include "zeus/utility/concepts.hpp"
@@ -85,26 +86,33 @@ concept code_unit_input_iterator = Zeus::input_iterator_of<Iterator, CodeUnit>;
  */
 [[nodiscard]] constexpr std::optional<Zeus::ssize> peek_char_size(
     CodeUnit code_unit) noexcept {
-    if (is_ascii(code_unit)) {
-        return 1;
-    }
-
-    // NOLINTNEXTLINE(*-magic-numbers)
-    if ((code_unit & 0xE0U) == 0xC0U) {
-        return 2;
-    }
-
-    // NOLINTNEXTLINE(*-magic-numbers)
-    if ((code_unit & 0xF0U) == 0xE0U) {
-        return 3;
-    }
-
-    // NOLINTNEXTLINE(*-magic-numbers)
-    if ((code_unit & 0xF8U) == 0xF0U) {
-        return 4;
-    }
+    if (is_ascii(code_unit))            return 1;
+    if ((code_unit & 0xE0U) == 0xC0U)   return 2;
+    if ((code_unit & 0xF0U) == 0xE0U)   return 3;
+    if ((code_unit & 0xF8U) == 0xF0U)   return 4;
     
     return std::nullopt;
+}
+
+/**
+ * Returns the size of the leading code unit byte.
+ *
+ * @precondition The given code unit is a leading byte.
+ *
+ * @throws std::invalid_argument if the given code unit is not a leading byte
+ * code unit.
+ */
+[[nodiscard]] constexpr Zeus::i8 leading_byte_size(CodeUnit code_unit) {
+    // NOLINTNEXTLINE(*-magic-numbers)
+    if (is_ascii(code_unit))            return 1;
+    if ((code_unit & 0xE0U) == 0xC0U)   return 2;
+    if ((code_unit & 0xF0U) == 0xE0U)   return 3;
+    if ((code_unit & 0xF8U) == 0xF0U)   return 4;
+
+    // TODO(tristan): Replace with ZEUS_PRECONDITION
+    // Programmer error - throw exception
+    throw std::invalid_argument{
+        "The given UTF-8 code unit is not a leading byte."};
 }
 
 [[nodiscard]] constexpr bool is_leading_byte(CodeUnit code_unit) noexcept {

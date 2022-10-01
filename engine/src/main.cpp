@@ -61,11 +61,11 @@ void println_utf8(Zeus::UTF8::code_unit_input_range auto&& range) {
 }
 
 void print_utf8(Zeus::UTF8::String const& str) {
-    print_utf8(str.begin(), str.end());
+    print_utf8(str.code_unit_cbegin(), str.code_unit_cend());
 }
 
 void println_utf8(Zeus::UTF8::String const& str) {
-    println_utf8(str.begin(), str.end());
+    println_utf8(str.code_unit_begin(), str.code_unit_cend());
 }
 
 void print_debug(Zeus::UTF8::String const& str) {
@@ -75,7 +75,7 @@ void print_debug(Zeus::UTF8::String const& str) {
     std::cout << std::dec << "UTF-8 Length: " << str.length() << '\n';
     std::cout << std::dec << "Code Unit Length: " << str.size_bytes() << '\n';
     std::cout << "Code Unit(s):\n";
-    print_code_units(str.begin(), str.end());
+    print_code_units(str.code_unit_begin(), str.code_unit_end());
     std::cout << "===========================\n";
 }
 
@@ -95,7 +95,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
     auto str_opt = Zeus::UTF8::String::create(u8_str);
     auto str{std::move(str_opt.value())};
-    println_utf8(u8_str);
+    // println_utf8(u8_str);
+    
+    for (auto character : str) {
+        // Print out UTF-8 character....
+        std::cout << "Size: " << static_cast<int>(character.size()) << '\n';
+        println_utf8(character);
+    }
 
     /*
     for (auto& character : str) {
@@ -106,8 +112,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         }
     }
     */
-
-    println_utf8(str);
 
     /*
     Zeus::UTF8::UpdateableCharacterIterator<Zeus::UTF8::String> begin(

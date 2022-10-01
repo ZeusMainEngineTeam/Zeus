@@ -73,10 +73,8 @@ class Character {
     }
 
     Character(const_pointer cstr, size_type len)
-        : Character{std::u8string_view{
-              cstr, len > Character::g_maxValidSize
-                        ? throw std::length_error{"Character is too large."}
-                        : static_cast<std::string_view::size_type>(len)}} {}
+        : Character{std::u8string_view(
+              cstr, Zeus::UTF8::Character::validate_length(len))} {}
 
     Character(std::u8string_view view)
         : Character{std::ranges::cbegin(view), std::ranges::cend(view)} {}
@@ -154,15 +152,21 @@ class Character {
     }
 
     [[nodiscard]] constexpr reverse_iterator rend() noexcept {
-        return std::rbegin(this->m_data) + this->m_len;
+        return std::next(std::rbegin(this->m_data), this->m_len);
     }
 
     [[nodiscard]] constexpr const_reverse_iterator rend() const noexcept {
-        return std::rbegin(this->m_data) + this->m_len;
+        return std::next(std::rbegin(this->m_data), this->m_len);
     }
 
     [[nodiscard]] constexpr const_reverse_iterator crend() const noexcept {
-        return std::crbegin(this->m_data) + this->m_len;
+        return std::next(std::crbegin(this->m_data), this->m_len);
+    }
+
+    [[nodiscard]] static constexpr bool is_valid_length(
+        std::integral auto value) {
+        return value >= Zeus::UTF8::Character::g_minValidSize &&
+               value <= Zeus::UTF8::Character::g_maxValidSize;
     }
 
     /**
@@ -175,10 +179,8 @@ class Character {
     template <std::input_iterator InputIt, std::sentinel_for<InputIt> Sentinel>
     [[nodiscard]] static constexpr bool is_valid_length(InputIt first,
                                                         Sentinel last) {
-        auto const distance = std::ranges::distance(first, last);
-
-        return distance >= Zeus::UTF8::Character::g_minValidSize &&
-               distance <= Zeus::UTF8::Character::g_maxValidSize;
+        return Zeus::UTF8::Character::is_valid_length(
+            std::ranges::distance(first, last));
     }
 
     template <std::ranges::input_range Range>
@@ -190,6 +192,20 @@ class Character {
    private:
     storage_type m_data;
     size_type m_len;
+
+    /**
+     * Validates the given length and returns the length.
+     *
+     * @throws std::length_error if...(fill in later)
+     */
+    [[nodiscard]] static constexpr size_type validate_length(
+        std::integral auto length) {
+        if (!Zeus::UTF8::Character::is_valid_length(length)) {
+            throw std::length_error{"Invalid length for a UTF-8 character."};
+        }
+
+        return static_cast<size_type>(length);
+    }
 };
 
 // =============================== INSPECTING =============================== //
@@ -242,10 +258,9 @@ constexpr Zeus::UTF8::Character::reference at(
 * @return
 */
 template <typename IntegerType>
+requires std::integral<IntegerType>
 [[nodiscard]] constexpr IntegerType to_integer(
     Zeus::UTF8::Character const& character) {
-    static_assert(std::is_integral_v<IntegerType>);
-
     /*
      * May throw if character is not a valid length.
      * @see Zeus::UTF8::ValidCharacter

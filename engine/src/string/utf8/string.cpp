@@ -8,51 +8,51 @@ inline namespace cpp20_v1 {
 
 // ================================ OPERATORS =============================== //
 
-String String::operator+(Zeus::UTF8::String::const_pointer rhs) {
+String String::operator+(Zeus::UTF8::String::code_unit_const_pointer rhs) {
     Zeus::UTF8::String new_str{*this};
 
     std::u8string_view const view{rhs};
-    new_str.insert(new_str.cend(), view);
+    new_str.insert(new_str.code_unit_cend(), view);
 
     return new_str;
 }
 
 String String::operator+(Zeus::UTF8::Character const& character) {
     Zeus::UTF8::String new_str{*this};
-    new_str.insert(new_str.cend(), character);
+    new_str.insert(new_str.code_unit_cend(), character);
 
     return new_str;
 }
 
 String String::operator+(Zeus::UTF8::ValidCharacter character) {
     Zeus::UTF8::String new_str{*this};
-    new_str.insert(new_str.cend(), character);
+    new_str.insert(new_str.code_unit_cend(), character);
 
     return new_str;
 }
 
 String String::operator+(String const& other) {
     Zeus::UTF8::String new_str{*this};
-    new_str.insert(new_str.cend(), other);
+    new_str.insert(new_str.code_unit_cend(), other);
 
     return new_str;
 }
 
-String& String::operator+=(Zeus::UTF8::String::const_pointer cstr) {
+String& String::operator+=(Zeus::UTF8::String::code_unit_const_pointer cstr) {
     std::u8string_view const view{cstr};
-    return this->insert(this->cend(), view);
+    return this->insert(this->code_unit_cend(), view);
 }
 
 String& String::operator+=(Zeus::UTF8::Character const& character) {
-    return this->insert(this->cend(), character);
+    return this->insert(this->code_unit_cend(), character);
 }
 
 String& String::operator+=(Zeus::UTF8::ValidCharacter character) {
-    return this->insert(this->cend(), character);
+    return this->insert(this->code_unit_cend(), character);
 }
 
 String& String::operator+=(Zeus::UTF8::String const& other) {
-    return this->insert(this->cend(), other);
+    return this->insert(this->code_unit_cend(), other);
 }
 
 // ================================ CREATION ================================ //
@@ -93,34 +93,54 @@ std::optional<String> String::create(std::u8string str) {
 // ================================ ITERATORS =============================== //
 
 String::const_iterator String::begin() const noexcept {
-    return std::begin(this->m_data);
+    return const_iterator{std::ranges::cbegin(this->m_data)};
 }
 
 String::const_iterator String::cbegin() const noexcept {
-    return std::cbegin(this->m_data);
+    return const_iterator{std::ranges::begin(this->m_data)};
 }
 
 String::const_iterator String::end() const noexcept {
-    return std::end(this->m_data);
+    return const_iterator{std::ranges::end(this->m_data)};
 }
 
 String::const_iterator String::cend() const noexcept {
+    return const_iterator{std::ranges::end(this->m_data)};
+}
+
+String::code_unit_const_iterator String::code_unit_begin() const noexcept {
+    return std::begin(this->m_data);
+}
+
+String::code_unit_const_iterator String::code_unit_cbegin() const noexcept {
+    return std::cbegin(this->m_data);
+}
+
+String::code_unit_const_iterator String::code_unit_end() const noexcept {
+    return std::end(this->m_data);
+}
+
+String::code_unit_const_iterator String::code_unit_cend() const noexcept {
     return std::cend(this->m_data);
 }
 
-String::const_reverse_iterator String::rbegin() const noexcept {
+String::code_unit_const_reverse_iterator String::code_unit_rbegin()
+    const noexcept {
     return std::rbegin(this->m_data);
 }
 
-String::const_reverse_iterator String::crbegin() const noexcept {
+String::code_unit_const_reverse_iterator String::code_unit_crbegin()
+    const noexcept {
     return std::crbegin(this->m_data);
 }
 
-String::const_reverse_iterator String::rend() const noexcept {
+String::code_unit_const_reverse_iterator String::code_unit_rend()
+    const noexcept {
     return std::rend(this->m_data);
 }
 
-String::const_reverse_iterator String::crend() const noexcept {
+String::code_unit_const_reverse_iterator String::code_unit_crend()
+    const noexcept {
     return std::crend(this->m_data);
 }
 
@@ -153,38 +173,38 @@ void String::swap(Zeus::UTF8::String& other) noexcept {
     this->m_data.swap(other.m_data);
 }
 
-String::const_pointer String::c_str() const noexcept {
+String::code_unit_const_pointer String::c_str() const noexcept {
     return this->m_data.c_str();
 }
 
-String::const_pointer String::data() const noexcept {
+String::code_unit_const_pointer String::data() const noexcept {
     return std::data(this->m_data);
 }
 
 // ================================= INSERT ================================= //
 
-String& String::insert(String::const_iterator position,
-                       String::const_pointer cstr, String::size_type count) {
+String& String::insert(String::code_unit_const_iterator position,
+                       String::code_unit_const_pointer cstr, String::size_type count) {
     return this->insert_if_impl(
         position, cstr, count,
         Zeus::UTF8::calculate_length(cstr, cstr + count));
 }
 
-Zeus::UTF8::String& String::insert(String::const_iterator position,
+Zeus::UTF8::String& String::insert(String::code_unit_const_iterator position,
                                    String const& other) {
     return this->insert_impl(position, other.m_data, other.m_len);
 }
 
-String& String::insert(String::const_iterator position,
+String& String::insert(String::code_unit_const_iterator position,
                        Zeus::UTF8::ValidCharacter character) {
     return this->insert_impl(position, character, std::ssize(character));
 }
 
 // ================================= ERASE ================================== //
 
-std::optional<String::iterator> String::erase(
-    String::const_iterator first,
-    String::const_iterator last) {
+std::optional<String::code_unit_const_iterator> String::erase(
+    String::code_unit_const_iterator first,
+    String::code_unit_const_iterator last) {
     if (Zeus::UTF8::is_valid_character_sequence(first, last)) {
         return this->erase_impl(first, last);
     }
@@ -192,8 +212,8 @@ std::optional<String::iterator> String::erase(
     return std::nullopt;
 }
 
-std::optional<String::iterator> String::erase(
-    String::const_iterator position) {
+std::optional<String::code_unit_const_iterator> String::erase(
+    String::code_unit_const_iterator position) {
     if (this->is_valid_insert_pos(position)) {
         return this->erase_impl(position, Zeus::UTF8::next(position));
     }
@@ -208,21 +228,21 @@ void String::clear() noexcept {
 
 // ================================ REPLACE ================================= //
 
-String& String::replace(String::const_iterator first,
-                        String::const_iterator last,
-                        String::const_pointer cstr, String::size_type count) {
+String& String::replace(String::code_unit_const_iterator first,
+                        String::code_unit_const_iterator last,
+                        String::code_unit_const_pointer cstr, String::size_type count) {
     return this->replace_impl(first, last, cstr,
                               std::ranges::next(cstr, count));
 }
 
-String& String::replace(String::const_iterator first,
-                        String::const_iterator last,
+String& String::replace(String::code_unit_const_iterator first,
+                        String::code_unit_const_iterator last,
                         String const& other) {
     return this->replace_impl(first, last, other.m_data);
 }
 
-String& String::replace(String::const_iterator first,
-                        String::const_iterator last,
+String& String::replace(String::code_unit_const_iterator first,
+                        String::code_unit_const_iterator last,
                         ValidCharacter character) {
     return this->replace_impl(first, last, character);
 }
@@ -236,13 +256,13 @@ String& String::replace(String::const_iterator first,
 // ================================= INSERT ================================= //
 
 bool String::is_valid_insert_pos(
-    String::const_iterator position) const {
+    String::code_unit_const_iterator position) const {
     return Zeus::UTF8::is_leading_byte(*position) ||
            position == std::cend(this->m_data);
 }
 
-String& String::insert_impl(String::const_iterator position,
-                            String::const_pointer cstr,
+String& String::insert_impl(String::code_unit_const_iterator position,
+                            String::code_unit_const_pointer cstr,
                             String::size_type count,
                             String::size_type utf8_count) {
     this->m_len += utf8_count;
@@ -252,8 +272,8 @@ String& String::insert_impl(String::const_iterator position,
     return *this;
 }
 
-String& String::insert_if_impl(String::const_iterator position,
-                               String::const_pointer cstr,
+String& String::insert_if_impl(String::code_unit_const_iterator position,
+                               String::code_unit_const_pointer cstr,
                                String::size_type count,
                                String::size_type utf8_count) {
     if (this->is_valid_insert_pos(position) &&
@@ -266,9 +286,9 @@ String& String::insert_if_impl(String::const_iterator position,
 
 // ================================= ERASE ================================== //
 
-String::iterator String::erase_impl(
-    String::const_iterator first,
-    String::const_iterator last) {
+String::code_unit_const_iterator String::erase_impl(
+    String::code_unit_const_iterator first,
+    String::code_unit_const_iterator last) {
     this->m_len -= Zeus::UTF8::calculate_length(first, last);
     return this->m_data.erase(first, last);
 }
@@ -281,8 +301,8 @@ String::iterator String::erase_impl(
 
 Zeus::UTF8::String& insert(
     Zeus::UTF8::String& string,
-    Zeus::UTF8::String::const_iterator position,
-    Zeus::UTF8::String::const_pointer str) {
+    Zeus::UTF8::String::code_unit_const_iterator position,
+    Zeus::UTF8::String::code_unit_const_pointer str) {
     // Quick way to get std::begin & std::end
     std::u8string_view const view{str};
 
@@ -293,7 +313,7 @@ Zeus::UTF8::String& insert(
 
 Zeus::UTF8::String& insert(
     Zeus::UTF8::String& string,
-    Zeus::UTF8::String::const_iterator position,
+    Zeus::UTF8::String::code_unit_const_iterator position,
     Zeus::Unicode::CodePoint code_point) {
     auto const str = Zeus::UTF8::encode(code_point);
     return string.insert(position, std::ranges::cbegin(str),
@@ -302,44 +322,44 @@ Zeus::UTF8::String& insert(
 
 Zeus::UTF8::String& insert(
     Zeus::UTF8::String& string,
-    Zeus::UTF8::String::const_iterator position,
+    Zeus::UTF8::String::code_unit_const_iterator position,
     Zeus::UTF8::ValidCharacter character) {
     return string.insert(position, character);
 }
 
 Zeus::UTF8::String& insert(Zeus::UTF8::String& string,
                                   Zeus::UTF8::String::size_type index,
-                                  Zeus::UTF8::String::const_pointer cstr,
+                                  Zeus::UTF8::String::code_unit_const_pointer cstr,
                                   Zeus::UTF8::String::size_type count) {
-    return string.insert(std::ranges::next(string.cbegin(), index),
+    return string.insert(std::ranges::next(string.code_unit_cbegin(), index),
                          cstr, count);
 }
 
 Zeus::UTF8::String& insert(Zeus::UTF8::String& string,
                            Zeus::UTF8::String::size_type index,
                            Zeus::UTF8::String const& other) {
-    return string.insert(std::ranges::next(string.cbegin(), index),
+    return string.insert(std::ranges::next(string.code_unit_cbegin(), index),
                          other);
 }
 
 Zeus::UTF8::String& insert(Zeus::UTF8::String& string,
                            Zeus::UTF8::String::size_type index,
                            Zeus::UTF8::ValidCharacter character) {
-    return string.insert(std::ranges::next(string.cbegin(), index),
+    return string.insert(std::ranges::next(string.code_unit_cbegin(), index),
                          character);
 }
 
 // ================================= APPEND ================================= //
 
 Zeus::UTF8::String& append(Zeus::UTF8::String& str,
-                           Zeus::UTF8::String::const_pointer cstr) {
-    return Zeus::insert(str, str.cend(), cstr);
+                           Zeus::UTF8::String::code_unit_const_pointer cstr) {
+    return Zeus::insert(str, str.code_unit_cend(), cstr);
 }
 
 Zeus::UTF8::String& append(Zeus::UTF8::String& str,
-                           Zeus::UTF8::String::const_pointer cstr,
+                           Zeus::UTF8::String::code_unit_const_pointer cstr,
                            Zeus::UTF8::String::size_type size) {
-    return str.insert(str.cend(), cstr, size);
+    return str.insert(str.code_unit_cend(), cstr, size);
 }
 
 Zeus::UTF8::String& append(Zeus::UTF8::String& str,
@@ -356,28 +376,28 @@ Zeus::UTF8::String& append(Zeus::UTF8::String& str,
 
 Zeus::UTF8::String& append(Zeus::UTF8::String& str,
                            Zeus::UTF8::ValidCharacter character) {
-    return str.insert(str.cend(), character);
+    return str.insert(str.code_unit_cend(), character);
 }
 
 Zeus::UTF8::String& append(Zeus::UTF8::String& str,
                            Zeus::UTF8::String const& other) {
-    return str.insert(str.cend(), other);
+    return str.insert(str.code_unit_cend(), other);
 }
 
 // ================================= ERASE ================================== //
 
-std::optional<Zeus::UTF8::String::iterator> erase(
+std::optional<Zeus::UTF8::String::code_unit_const_iterator> erase(
     Zeus::UTF8::String& str, Zeus::UTF8::String::size_type index) {
     if (index > str.size() || index < 0) {
         throw std::out_of_range{"Index is out of range."};
     }
 
-    auto const position = std::ranges::next(str.cbegin(), index);
+    auto const position = std::ranges::next(str.code_unit_cbegin(), index);
 
     return str.erase(position);
 }
 
-std::optional<Zeus::UTF8::String::iterator> erase(
+std::optional<Zeus::UTF8::String::code_unit_const_iterator> erase(
     Zeus::UTF8::String& str, Zeus::UTF8::String::size_type index,
     Zeus::UTF8::String::size_type count) {
     ZEUS_ASSERT(count >= 0, "Cannot have negative count.");
@@ -386,15 +406,15 @@ std::optional<Zeus::UTF8::String::iterator> erase(
         throw std::out_of_range{"Index is out of range."};
     }
 
-    auto const position = std::ranges::next(str.cbegin(), index);
+    auto const position = std::ranges::next(str.code_unit_cbegin(), index);
 
     // Check if section is within string
     auto const is_valid_section = count != Zeus::UTF8::String::g_nposCodeUnit &&
                                   index + count <= str.length();
 
     auto const end = is_valid_section
-                         ? std::ranges::next(str.cbegin(), count)
-                         : str.cend();
+                         ? std::ranges::next(str.code_unit_cbegin(), count)
+                         : str.code_unit_cend();
 
     return str.erase(position, end);
 }
@@ -416,7 +436,7 @@ std::optional<Zeus::UTF8::String> substr(Zeus::UTF8::String const& other,
     auto const max_count = size - index;
     auto const actual_count = std::min(max_count, count);
 
-    auto const begin = std::ranges::next(other.cbegin(), index);
+    auto const begin = std::ranges::next(other.code_unit_cbegin(), index);
     auto const end = std::ranges::next(begin, actual_count);
 
     return Zeus::UTF8::String::create(begin, end);

@@ -41,3 +41,6 @@ engine/include/zeus/config.hpp
 
 # Default build directory
 build/
+
+# From clangd
+.cache/*

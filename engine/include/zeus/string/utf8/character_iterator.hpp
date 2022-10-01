@@ -18,10 +18,10 @@
 
 #pragma once
 
+#include <iomanip>
+#include <iostream>
 #include <memory>
 #include <optional>
-#include <iostream>
-#include <iomanip>
 
 #include "zeus/core/types.hpp"
 #include "zeus/string/utf8/character.hpp"
@@ -36,33 +36,39 @@ namespace Zeus::UTF8 {
 // NOLINTNEXTLINE(readability-identifier-naming)
 inline namespace cpp20_v1 {
 
-template <typename Container>
+//std::convertible_to<std::iter_value_t<Iterator>, Zeus::UTF8::CodeUnit>
+
+template <typename Iterator>
+requires std::bidirectional_iterator<Iterator>
 class CharacterIterator {
    public:
+    using this_type = CharacterIterator<Iterator>;
+
     using value_type = UTF8::Character;
     using pointer = value_type*;
-    using const_pointer = value_type const*;
     using reference = value_type&;
+    using const_pointer = value_type const*;
     using const_reference = value_type const&;
 
     using iterator_category = std::bidirectional_iterator_tag;
 
-    constexpr explicit CharacterIterator(
-        std::ranges::iterator_t<Container> iterator)
-        : m_iterator{iterator} {}
+    // Copy constructor can throw D: - CANNOT be noexcept
+    constexpr explicit CharacterIterator(Iterator iterator)
+        : m_it{iterator} {}
 
     // Prefix increment (++i)
     constexpr CharacterIterator& operator++() noexcept {
-        this->m_it = UTF8::next(this->m_it);
+        // TODO(tristan): Replace this one with safe version
+        this->m_it = Zeus::UTF8::next(this->m_it);
 
-        this->reset_char();
+        this->reset_character();
 
         return *this;
     }
 
     // Postfix increment (i++)
     constexpr CharacterIterator operator++(int) noexcept {
-        CharacterIterator tmp = *this;
+        CharacterIterator tmp{*this};
 
         ++(*this);
 
@@ -71,16 +77,16 @@ class CharacterIterator {
 
     // Prefix decrement (--i)
     constexpr CharacterIterator& operator--() noexcept {
-        this->m_it = UTF8::prev(this->m_it);
+        this->m_it = Zeus::UTF8::prev(this->m_it);
 
-        this->reset_char();
+        this->reset_character();
 
         return *this;
     }
 
     // Postfix decrement (i--)
-    constexpr CharacterIterator operator--(int) noexcept {
-        CharacterIterator tmp = *this;
+    constexpr CharacterIterator operator--(int) {
+        CharacterIterator tmp{*this};
 
         --(*this);
 
@@ -88,48 +94,45 @@ class CharacterIterator {
     }
 
     constexpr pointer operator->() {
-        if (!this->m_current.has_value()) {
-            this->m_current = create_char(this->m_it);
-        }
+        this->init_character_once();
 
         return std::addressof(this->m_current.value());
     }
 
     constexpr reference operator*() {
-        if (!this->m_current.has_value()) {
-            this->m_current = create_char(this->m_it);
-        }
+        this->init_character_once();
 
         return this->m_current.value();
     }
 
-    constexpr bool operator==(
-        CharacterIterator const& other) const noexcept {
+    constexpr bool operator==(CharacterIterator const& other) const noexcept {
         return this->m_it == other.m_it;
     }
 
-    constexpr bool operator!=(
-        CharacterIterator const& other) const noexcept {
+    constexpr bool operator!=(CharacterIterator const& other) const noexcept {
         return !(*this == other);
     }
 
    private:
-    Character::iterator m_iterator;
+    Iterator m_it;
     std::optional<UTF8::Character> m_current;
 
-    constexpr void reset_char() noexcept {
-        if (this->m_current.has_value()) {
-            this->m_current = std::nullopt;
+    constexpr void reset_character() noexcept {
+        this->m_current.reset();
+    }
+
+    void init_character_once() noexcept {
+        if (!this->m_current.has_value()) {
+            this->m_current = create_character(this->m_it);
         }
     }
 
-    [[nodiscard]] UTF8::Character create_char(Character::iterator it) const {
-        auto const byte_count = Zeus::UTF8::peek_char_size(*it);
+    [[nodiscard]] UTF8::Character create_character(Iterator iter) const {
+        auto const byte_size = Zeus::UTF8::leading_byte_size(*iter);
 
         using size_type = Zeus::UTF8::Character::size_type;
 
-        return {std::to_address(it),
-                static_cast<size_type>(byte_count.value())};
+        return {std::to_address(iter), static_cast<size_type>(byte_size)};
     }
 };
 
