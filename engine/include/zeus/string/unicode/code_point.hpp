@@ -7,10 +7,10 @@
  * Software Foundation, either version 3 of the License, or (at your option) any
  * later version.
  *
- * The Zeus Game Engine is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
- * Public License for more details.
+ * The Zeus Game Engine is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * the Zeus Game Engine. If not, see <https://www.gnu.org/licenses/>.
@@ -19,70 +19,171 @@
 #pragma once
 
 #include <concepts>
-#include <cstddef>
-#include <iterator>
-#include <optional>
-#include <span>
-#include <stdexcept>
-#include <type_traits>
+#include <string>
 
 #include "zeus/core/types.hpp"
 #include "zeus/string/unicode/exception.hpp"
+
+/**
+ * @file string/unicode/code_point.hpp
+ *
+ * Provides a lightweight support wrapper for Unicode code points.
+ */
 
 namespace Zeus {
 
 namespace Unicode {
 
+/**
+ * A Unicode code point.
+ *
+ * @note This will be a valid Unicode code point.
+ */
 class CodePoint {
    public:
-    // TODO(tristan): Remember why I made this unsigned vs signed?  Unicode
-    // standard?
+    /**
+     * The inner representation of the Unicode code point value.
+     */
     using value_type = Zeus::u32;
 
+    /**
+     * The maximum possible value for a valid Unicode code point.
+     */
     static constexpr value_type g_rawMax = 0x10FFFFU;
+
+    /**
+     * The minimum possible value for a valid Unicode code point.
+     */
     static constexpr value_type g_rawMin = 0x0U;
 
+    /**
+     * Default constructor.
+     */
     CodePoint() noexcept = default;
 
+    /**
+     * Constructs a Unicode code point using the given value.
+     *
+     * @param value The value to construct the Unicode code point
+     *
+     * @throws Zeus::Unicode::Exception if the given value is not within the
+     * valid Unicode code point range.
+     *
+     * @see Zeus::Unicode::CodePoint::g_rawMax
+     * @see Zeus::Unicode::CodePoint::g_rawMin
+     */
     constexpr explicit CodePoint(value_type value)
-        : m_value{value > g_rawMax
-                      ? throw Zeus::Unicode::Exception{"Invalid code point."}
-                      : value} {}
+        : m_value{CodePoint::validate_value(value)} {}
 
+    /**
+     * Default CodePoint three-way comparison with strong_ordering.
+     */
     [[nodiscard]] constexpr auto operator<=>(CodePoint const&) const noexcept =
         default;
 
+    /**
+     * value_type three-way comparison with strong_ordering.
+     */
     [[nodiscard]] constexpr auto operator<=>(value_type value) const noexcept {
         return this->m_value <=> value;
     }
 
+    /**
+     * Converts the given Unicode code point to the IntegerType.
+     *
+     * @tparam IntegerType The integer type to convert to
+     *
+     * @param point The code point to convert
+     *
+     * @return An IntegerType representation of the given code point
+     */
     template <std::integral IntegerType>
-    friend constexpr auto to_integer(Zeus::Unicode::CodePoint point);
+    friend constexpr auto to_integer(Zeus::Unicode::CodePoint point) noexcept;
 
+    /**
+     * The maximum Unicode code point.
+     */
     static CodePoint const g_max;
+
+    /**
+     * The minimum Unicode code point.
+     */
     static CodePoint const g_min;
+
+    /**
+     * The default replacement character for replacing a invalid UTF-8
+     * character.
+     */
     static CodePoint const g_replacementCharacter;
 
    private:
+    /**
+     * The value containing the Unicode code point.
+     *
+     * @note This invariant will always be a valid Unicode code point.
+     */
     value_type m_value;
+
+    /**
+     * Member helper function to validate the Unicode code point value.
+     *
+     * @param value The value for the Unicode code point
+     *
+     * @throws Zeus::Unicode::Exception if the given value is not in the Unicode
+     * code point range
+     *
+     * @return The given value
+     */
+    [[nodiscard]] static constexpr value_type validate_value(value_type value) {
+        if (value > g_rawMax) {
+            throw Zeus::Unicode::Exception{"Invalid code point."};
+        }
+
+        return value;
+    }
 };
 
 template <std::integral IntegerType>
-[[nodiscard]] constexpr auto to_integer(CodePoint point) {
+[[nodiscard]] constexpr auto to_integer(CodePoint point) noexcept {
     return IntegerType(point.m_value);
 }
 
+/**
+ * Checks if the given value is in range of a valid Unicode code point.
+ *
+ * @param point The value for a Unicode code point to check
+ *
+ * @return True if the given value is within the valid Unicode code point range,
+ * otherwise false
+ */
 [[nodiscard]] constexpr bool is_valid(CodePoint::value_type point) noexcept {
     return point <= CodePoint::g_rawMax && point >= CodePoint::g_rawMin;
 }
 
 }  // namespace Unicode
 
+/**
+ * Converts the given Unicode code point to the IntegerType.
+ *
+ * @tparam IntegerType The integer type to convert to
+ *
+ * @param point The code point to convert
+ *
+ * @return An IntegerType representation of the given code point
+*/
 template <std::integral IntegerType>
-[[nodiscard]] constexpr auto to_integer(Zeus::Unicode::CodePoint point) {
+[[nodiscard]] constexpr auto to_integer(
+    Zeus::Unicode::CodePoint point) noexcept {
     return Zeus::Unicode::to_integer<IntegerType>(point);
 }
 
+/**
+ * Converts the given Unicode code point into a string representation.
+ *
+ * @param point The Unicode code point to convert
+ *
+ * @return The string representation
+ */
 [[nodiscard]] std::string to_string(Zeus::Unicode::CodePoint point) noexcept;
 
 }  // namespace Zeus

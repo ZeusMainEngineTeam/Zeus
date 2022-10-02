@@ -185,6 +185,11 @@ String& String::insert(String::code_unit_const_iterator position,
 
 Zeus::UTF8::String& String::insert(String::code_unit_const_iterator position,
                                    String const& other) {
+    ZEUS_ASSERT(this->is_valid_insert_pos(position),
+                "@precondition All of the elements in the range "
+                "[position, position + size()) make up a valid UTF-8 character "
+                "sequence");
+
     return this->insert_impl(position, other.m_data, other.m_len);
 }
 
@@ -203,10 +208,10 @@ String::code_unit_const_iterator String::erase(
 
 String::code_unit_const_iterator String::erase(
     String::code_unit_const_iterator position) {
-    ZEUS_ASSERT(
-        this->is_valid_insert_pos(position),
-        "@precondition All of the elements in the range "
-        "[position, position + size()) make up a valid UTF-8 character sequence");
+    ZEUS_ASSERT(this->is_valid_insert_pos(position),
+                "@precondition All of the elements in the range "
+                "[position, position + size()) make up a valid UTF-8 character "
+                "sequence");
 
     return this->erase_impl(position, Zeus::UTF8::next(position));
 }
@@ -221,6 +226,15 @@ void String::clear() noexcept {
 String& String::replace(String::code_unit_const_iterator first,
                         String::code_unit_const_iterator last,
                         String::code_unit_const_pointer cstr, String::size_type count) {
+    ZEUS_ASSERT(
+        Zeus::UTF8::is_valid_character_sequence(first, last),
+        "@precondition All of the elements in the range "
+        "[first, last) make up a valid UTF-8 character sequence");
+    ZEUS_ASSERT(
+        Zeus::UTF8::is_valid_character_sequence(cstr, cstr + count),
+        "@precondition All of the elements in the range "
+        "[cstr, cstr + count) make up a valid UTF-8 character sequence");
+
     return this->replace_impl(first, last, cstr,
                               std::ranges::next(cstr, count));
 }
@@ -228,6 +242,11 @@ String& String::replace(String::code_unit_const_iterator first,
 String& String::replace(String::code_unit_const_iterator first,
                         String::code_unit_const_iterator last,
                         String const& other) {
+    ZEUS_ASSERT(
+        Zeus::UTF8::is_valid_character_sequence(first, last),
+        "@precondition All of the elements in the range "
+        "[first, last) make up a valid UTF-8 character sequence");
+
     return this->replace_impl(first, last, other.m_data);
 }
 
