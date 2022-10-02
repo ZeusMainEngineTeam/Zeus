@@ -84,6 +84,32 @@ class String {
     // ============================ CONSTRUCTORS ============================ //
 
     String() noexcept = default;
+
+    String(String const& other, size_type index, size_type count)
+        : m_data{other.m_data, static_cast<storage_type::size_type>(index),
+                 static_cast<storage_type::size_type>(count)},
+          m_len{Zeus::UTF8::calculate_length(other.m_data)} {}
+
+    explicit String(std::u8string str)
+        : m_data{std::move(str)},
+        m_len{Zeus::UTF8::calculate_length(this->m_data)} {
+        ZEUS_ASSERT(Zeus::UTF8::is_valid_character_sequence(this->m_data),
+                "@precondition str The given string is a valid UTF-8 "
+                "character sequence.");
+    }
+
+    template <Zeus::UTF8::code_unit_input_iterator InputIt,
+              std::sentinel_for<InputIt> Sentinel>
+    constexpr String(InputIt first, Sentinel last)
+        : m_data{first, last},
+        m_len{Zeus::UTF8::calculate_length(first, last)} {
+        ZEUS_ASSERT(Zeus::UTF8::is_valid_character_sequence(this->m_data),
+                "@precondition str The given string is a valid UTF-8 "
+                "character sequence.");
+    }
+
+    constexpr explicit String(Zeus::UTF8::code_unit_input_range auto&& range)
+        : String{std::ranges::begin(range), std::ranges::end(range)} {}
  
     // ============================= OPERATORS ============================== //
 
@@ -223,11 +249,10 @@ class String {
 
     // ================================ ERASE =============================== //
 
-    std::optional<code_unit_const_iterator> erase(
-        code_unit_const_iterator first, code_unit_const_iterator last);
+    code_unit_const_iterator erase(code_unit_const_iterator first,
+                                   code_unit_const_iterator last);
 
-    std::optional<code_unit_const_iterator> erase(
-        code_unit_const_iterator position);
+    code_unit_const_iterator erase(code_unit_const_iterator position);
 
     void clear() noexcept;
 
@@ -291,24 +316,6 @@ class String {
     size_type m_len{};
 
     // ============================= CONSTRUCTOR ============================ //
-
-    String(String const& other, size_type index, size_type count)
-        : m_data{other.m_data, static_cast<storage_type::size_type>(index),
-                 static_cast<storage_type::size_type>(count)},
-          m_len{Zeus::UTF8::calculate_length(other.m_data)} {}
-
-    explicit String(std::u8string str)
-        : m_data{std::move(str)},
-          m_len{Zeus::UTF8::calculate_length(this->m_data)} {}
-
-    template <Zeus::UTF8::code_unit_input_iterator InputIt,
-              std::sentinel_for<InputIt> Sentinel>
-    constexpr String(InputIt first, Sentinel last)
-        : m_data{first, last},
-          m_len{Zeus::UTF8::calculate_length(first, last)} {}
-
-    constexpr explicit String(Zeus::UTF8::code_unit_input_range auto&& range)
-        : String{std::ranges::begin(range), std::ranges::end(range)} {}
 
     template <std::input_iterator InputIt, std::sentinel_for<InputIt> Sentinel>
     constexpr String(InputIt first, Sentinel last)

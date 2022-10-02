@@ -117,22 +117,19 @@ template <Zeus::UTF8::code_unit_input_range Range>
                                         std::ranges::end(range));
 }
 
+/**
+ *
+ *
+ * @note Zeus::Unicode::CodePoint *has to* be valid so the range will be
+ * valid.
+ */
 [[nodiscard]] constexpr Zeus::ssize encode_length(
     Zeus::Unicode::CodePoint code_point) noexcept {
-    auto const data = Zeus::to_integer<Zeus::u32>(code_point);
 
     // NOLINTBEGIN(*-magic-numbers)
-    if (data <= 0x007FU) {
-        return 1;
-    }
-
-    if (data <= 0x07FFU) {
-        return 2;
-    }
-
-    if (data <= 0xFFFFU) {
-        return 3;
-    }
+    if (code_point <= 0x007FU) return 1;
+    if (code_point <= 0x07FFU) return 2;
+    if (code_point <= 0xFFFFU) return 3;
     // NOLINTEND(*-magic-numbers)
 
     // data <= 0x10FFFFU

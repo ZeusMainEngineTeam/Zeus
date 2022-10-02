@@ -174,9 +174,13 @@ String::code_unit_const_pointer String::data() const noexcept {
 
 String& String::insert(String::code_unit_const_iterator position,
                        String::code_unit_const_pointer cstr, String::size_type count) {
-    return this->insert_if_impl(
-        position, cstr, count,
-        Zeus::UTF8::calculate_length(cstr, cstr + count));
+    ZEUS_ASSERT(
+        Zeus::UTF8::is_valid_character_sequence(cstr, cstr + count),
+        "@precondition All of the elements in the range "
+        "[cstr, cstr + count) make up a valid UTF-8 character sequence");
+
+    return this->insert_impl(position, cstr, count,
+                             Zeus::UTF8::calculate_length(cstr, cstr + count));
 }
 
 Zeus::UTF8::String& String::insert(String::code_unit_const_iterator position,
@@ -186,23 +190,25 @@ Zeus::UTF8::String& String::insert(String::code_unit_const_iterator position,
 
 // ================================= ERASE ================================== //
 
-std::optional<String::code_unit_const_iterator> String::erase(
+String::code_unit_const_iterator String::erase(
     String::code_unit_const_iterator first,
     String::code_unit_const_iterator last) {
-    if (Zeus::UTF8::is_valid_character_sequence(first, last)) {
-        return this->erase_impl(first, last);
-    }
+    ZEUS_ASSERT(
+        Zeus::UTF8::is_valid_character_sequence(first, last),
+        "@precondition All of the elements in the range "
+        "[first, last) make up a valid UTF-8 character sequence");
 
-    return std::nullopt;
+    return this->erase_impl(first, last);
 }
 
-std::optional<String::code_unit_const_iterator> String::erase(
+String::code_unit_const_iterator String::erase(
     String::code_unit_const_iterator position) {
-    if (this->is_valid_insert_pos(position)) {
-        return this->erase_impl(position, Zeus::UTF8::next(position));
-    }
+    ZEUS_ASSERT(
+        this->is_valid_insert_pos(position),
+        "@precondition All of the elements in the range "
+        "[position, position + size()) make up a valid UTF-8 character sequence");
 
-    return std::nullopt;
+    return this->erase_impl(position, Zeus::UTF8::next(position));
 }
 
 void String::clear() noexcept {

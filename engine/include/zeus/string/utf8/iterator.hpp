@@ -65,9 +65,9 @@ template <std::input_or_output_iterator Iterator>
 template <std::input_or_output_iterator Iterator>
 [[nodiscard]] constexpr Iterator next(Iterator iterator,
                                       std::iter_difference_t<Iterator> num) {
-    ZEUS_ASSERT(num >= 0, "@precondition num Number has to be non-negative.");
+    ZEUS_ASSERT(num > 0, "@precondition num Number has to be positive.");
 
-    while (num-- > 0) {
+    for (; num > 0; --num) {
         iterator = Zeus::UTF8::next(iterator);
     }
 
@@ -86,7 +86,7 @@ template <std::input_or_output_iterator Iterator,
 [[nodiscard]] constexpr Iterator next(Iterator iterator,
                                       std::iter_difference_t<Iterator> num,
                                       Sentinel bound) {
-    ZEUS_ASSERT(num > 0, "Number has to be positive.");
+    ZEUS_ASSERT(num > 0, "@precondition num Number has to be positive.");
 
     while (num > 0 && iterator != bound) {
         iterator = Zeus::UTF8::next(iterator, bound);
@@ -98,9 +98,20 @@ template <std::input_or_output_iterator Iterator,
 
 template <std::bidirectional_iterator Iterator>
 [[nodiscard]] constexpr Iterator prev(Iterator iterator) {
+    ZEUS_ASSERT(Zeus::UTF8::is_leading_byte(*iterator) || *iterator == '\0' ||
+                    !Zeus::UTF8::is_continuation_byte(*iterator),
+                "@precondition iterator Currently has to point to a leading "
+                "byte, null code unit or to the std::end of a sequence.");
+
+    auto counter{0};
+
     do {
         iterator = std::ranges::prev(iterator);
-    } while (is_continuation_byte(*iterator));
+        ++counter;
+    } while (is_continuation_byte(*iterator) && counter < 4);
+
+    ZEUS_ASSERT(Zeus::UTF8::leading_byte_size(*iterator) == counter,
+                "@precondition iterator Iterates over a valid UTF-8 character");
 
     return iterator;
 }
@@ -108,11 +119,10 @@ template <std::bidirectional_iterator Iterator>
 template <std::bidirectional_iterator Iterator>
 [[nodiscard]] constexpr Iterator prev(Iterator iterator,
         std::iter_difference_t<Iterator> num) {
-    ZEUS_ASSERT(num > 0, "Number has to be positive.");
+    ZEUS_ASSERT(num > 0, "@precondition num Number has to be positive.");
 
-    while (num > 0) {
+    for (; num > 0; --num) {
         iterator = Zeus::UTF8::prev(iterator);
-        --num;
     }
 
     return iterator;
@@ -122,11 +132,10 @@ template <std::bidirectional_iterator Iterator>
 [[nodiscard]] constexpr Iterator prev(Iterator iterator,
                                       std::iter_difference_t<Iterator> num,
                                       Iterator bound) {
-    ZEUS_ASSERT(num > 0, "Number has to be positive.");
+    ZEUS_ASSERT(num > 0, "@precondition num Number has to be positive.");
 
-    while (num > 0 && iterator != bound) {
+    for (; num > 0 && iterator != bound; --num) {
         iterator = Zeus::UTF8::prev(iterator, bound);
-        --num;
     }
 
     return iterator;

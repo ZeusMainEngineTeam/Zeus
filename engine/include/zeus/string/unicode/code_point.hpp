@@ -18,12 +18,13 @@
 
 #pragma once
 
+#include <concepts>
 #include <cstddef>
 #include <iterator>
+#include <optional>
 #include <span>
 #include <stdexcept>
 #include <type_traits>
-#include <optional>
 
 #include "zeus/core/types.hpp"
 #include "zeus/string/unicode/exception.hpp"
@@ -34,6 +35,8 @@ namespace Unicode {
 
 class CodePoint {
    public:
+    // TODO(tristan): Remember why I made this unsigned vs signed?  Unicode
+    // standard?
     using value_type = Zeus::u32;
 
     static constexpr value_type g_rawMax = 0x10FFFFU;
@@ -46,17 +49,15 @@ class CodePoint {
                       ? throw Zeus::Unicode::Exception{"Invalid code point."}
                       : value} {}
 
-    [[nodiscard]] constexpr bool operator<=>(CodePoint const&) const noexcept =
+    [[nodiscard]] constexpr auto operator<=>(CodePoint const&) const noexcept =
         default;
 
-    template <typename IntegerType>
-    friend inline constexpr IntegerType to_integer(
-        Zeus::Unicode::CodePoint point) noexcept {
-        static_assert(std::is_integral_v<IntegerType>,
-                      "Template type is not an integer type.");
-
-        return IntegerType(point.m_value);
+    [[nodiscard]] constexpr auto operator<=>(value_type value) const noexcept {
+        return this->m_value <=> value;
     }
+
+    template <std::integral IntegerType>
+    friend constexpr auto to_integer(Zeus::Unicode::CodePoint point);
 
     static CodePoint const g_max;
     static CodePoint const g_min;
@@ -66,26 +67,22 @@ class CodePoint {
     value_type m_value;
 };
 
-template <typename IntegerType>
-inline constexpr IntegerType to_integer(
-    Zeus::Unicode::CodePoint point) noexcept;
-
-}  // namespace Unicode
-
-template <typename IntegerType>
-[[nodiscard]] inline constexpr IntegerType to_integer(
-    Zeus::Unicode::CodePoint point) noexcept {
-    return Unicode::to_integer<IntegerType>(point);
+template <std::integral IntegerType>
+[[nodiscard]] constexpr auto to_integer(CodePoint point) {
+    return IntegerType(point.m_value);
 }
-
-[[nodiscard]] std::string to_string(Zeus::Unicode::CodePoint point) noexcept;
-
-namespace Unicode {
 
 [[nodiscard]] constexpr bool is_valid(CodePoint::value_type point) noexcept {
     return point <= CodePoint::g_rawMax && point >= CodePoint::g_rawMin;
 }
 
 }  // namespace Unicode
+
+template <std::integral IntegerType>
+[[nodiscard]] constexpr auto to_integer(Zeus::Unicode::CodePoint point) {
+    return Zeus::Unicode::to_integer<IntegerType>(point);
+}
+
+[[nodiscard]] std::string to_string(Zeus::Unicode::CodePoint point) noexcept;
 
 }  // namespace Zeus
