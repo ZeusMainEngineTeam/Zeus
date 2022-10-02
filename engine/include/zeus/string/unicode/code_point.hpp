@@ -146,7 +146,7 @@ class CodePoint {
      *
      * @note This invariant will always be a valid Unicode code point.
      */
-    value_type m_value;
+    value_type m_value{};
 
     /**
      * Member helper function to validate the Unicode code point value.
