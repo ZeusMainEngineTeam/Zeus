@@ -103,11 +103,12 @@ concept code_unit_input_iterator = Zeus::input_iterator_of<Iterator, CodeUnit>;
  * code unit.
  */
 [[nodiscard]] constexpr Zeus::i8 leading_byte_size(CodeUnit code_unit) {
-    // NOLINTNEXTLINE(*-magic-numbers)
+    // NOLINTBEGIN(*-magic-numbers)
     if (is_ascii(code_unit))            return 1;
     if ((code_unit & 0xE0U) == 0xC0U)   return 2;
     if ((code_unit & 0xF0U) == 0xE0U)   return 3;
     if ((code_unit & 0xF8U) == 0xF0U)   return 4;
+    // NOLINTEND(*-magic-numbers)
 
     // TODO(tristan): Replace with ZEUS_PRECONDITION
     // Programmer error - throw exception

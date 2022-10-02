@@ -18,17 +18,14 @@
 
 #pragma once
 
-#include <optional>
 #include <array>
-#include <stdexcept>
-#include <iostream>
+#include <optional>
 
-#include "zeus/memory/utility.hpp"
 #include "zeus/core/types.hpp"
-#include "zeus/string/utf8/code_unit.hpp"
+#include "zeus/memory/utility.hpp"
 #include "zeus/string/unicode/code_point.hpp"
 #include "zeus/string/utf8/algorithm.hpp"
-#include "zeus/core/assert.hpp"
+#include "zeus/string/utf8/code_unit.hpp"
 
 namespace Zeus {
 
@@ -42,7 +39,7 @@ namespace UTF8 {
 inline namespace cpp20_v1 {
 
 /*
- * An encoded UTF-8 character.
+ * An abstract representation of a valid UTF-8 character.
  */
 class Character {
    public:
@@ -64,28 +61,29 @@ class Character {
     using const_reverse_iterator =
         typename storage_type::const_reverse_iterator;
 
-    constexpr Character() noexcept : m_data{0}, m_len{0} {}
+    constexpr Character() noexcept = default;
 
     constexpr explicit Character(Zeus::Unicode::CodePoint code_point) noexcept
-        : m_data{},
-          m_len{static_cast<size_type>(Zeus::UTF8::encode_length(code_point))} {
+        : m_len{static_cast<size_type>(Zeus::UTF8::encode_length(code_point))} {
         Zeus::UTF8::encode(code_point, std::ranges::begin(this->m_data));
     }
 
     Character(const_pointer cstr, size_type len)
-        : Character{std::u8string_view(
-              cstr, Zeus::UTF8::Character::validate_length(len))} {}
+        : Character{std::u8string_view(cstr, len)} {}
 
-    Character(std::u8string_view view)
+    explicit Character(std::u8string_view view)
         : Character{std::ranges::cbegin(view), std::ranges::cend(view)} {}
 
     template <Zeus::UTF8::code_unit_input_iterator InputIt,
               std::sentinel_for<InputIt> Sentinel>
     constexpr Character(InputIt first, Sentinel last)
-        : m_data{},
-          m_len{static_cast<size_type>(std::ranges::distance(first, last))} {
-        ZEUS_ASSERT(Character::is_valid_length(first, last),
-                    "UTF-8 Character is too big or empty.");
+        : m_len{static_cast<size_type>(std::ranges::distance(first, last))} {
+        ZEUS_ASSERT(Character::is_valid_length(this->m_len),
+                    "@precondition A UTF-8 character is between 1 to 4 8-bit "
+                    "code units.");
+        ZEUS_ASSERT(Zeus::UTF8::is_valid_character(first, last),
+                    "@precondition All of the elements in the range "
+                    "[first, last) make up a UTF-8 character.");
 
         std::ranges::copy(first, last, std::ranges::begin(this->m_data));
     }
@@ -96,8 +94,42 @@ class Character {
             || !std::is_same_v<DRange, std::u8string>)
     && Zeus::UTF8::code_unit_input_range<Range>
     && (!std::is_convertible_v<Range, const_pointer>)
-    constexpr Character(Range&& range)
+    constexpr explicit Character(Range const& range)
         : Character{std::ranges::begin(range), std::ranges::end(range)} {}
+
+    [[nodiscard]] static std::optional<Character> create(
+            const_pointer cstr, size_type length) noexcept {
+        return Zeus::UTF8::Character::create(cstr,
+                                             std::ranges::next(cstr, length));
+    }
+
+    // TODO(tristan): Replace with std::expected or own version of it
+    [[nodiscard]] static std::optional<Character> create(
+        std::u8string_view view) noexcept {
+        return Zeus::UTF8::Character::create(std::ranges::begin(view),
+                                             std::ranges::end(view));
+    }
+
+    template <Zeus::UTF8::code_unit_input_iterator InputIt,
+              std::sentinel_for<InputIt> Sentinel>
+    [[nodiscard]] static std::optional<Character> create(InputIt first,
+                                                         Sentinel last) {
+        if (Zeus::UTF8::is_valid_character(first, last)) {
+            return Zeus::UTF8::Character{first, last};
+        }
+
+        return std::nullopt;
+    }
+
+    template <typename Range, typename DRange = std::remove_cvref_t<Range>>
+    requires (!std::is_same_v<DRange, std::u8string_view> 
+            || !std::is_same_v<DRange, std::u8string>)
+    && Zeus::UTF8::code_unit_input_range<Range>
+    && (!std::is_convertible_v<Range, const_pointer>)
+    [[nodiscard]] static std::optional<Character> create(Range&& range) {
+        return Zeus::UTF8::Character::create(std::ranges::begin(range),
+                                             std::ranges::end(range));
+    }
 
     [[nodiscard]] constexpr bool operator==(
         Character const& character) const noexcept = default;
@@ -128,15 +160,15 @@ class Character {
     }
 
     [[nodiscard]] constexpr iterator end() noexcept {
-        return std::begin(this->m_data) + this->m_len;
+        return std::next(std::begin(this->m_data), this->m_len);
     }
 
     [[nodiscard]] constexpr const_iterator end() const noexcept {
-        return std::cbegin(this->m_data) + this->m_len;
+        return std::next(std::cbegin(this->m_data), this->m_len);
     }
 
     [[nodiscard]] constexpr const_iterator cend() const noexcept {
-        return std::cbegin(this->m_data) + this->m_len;
+        return std::next(std::cbegin(this->m_data), this->m_len);
     }
 
     [[nodiscard]] constexpr reverse_iterator rbegin() noexcept {
@@ -190,44 +222,16 @@ class Character {
     }
 
    private:
-    storage_type m_data;
-    size_type m_len;
+    storage_type m_data{};
+    size_type m_len{};
 
-    /**
-     * Validates the given length and returns the length.
-     *
-     * @throws std::length_error if...(fill in later)
-     */
-    [[nodiscard]] static constexpr size_type validate_length(
-        std::integral auto length) {
-        if (!Zeus::UTF8::Character::is_valid_length(length)) {
-            throw std::length_error{"Invalid length for a UTF-8 character."};
-        }
-
-        return static_cast<size_type>(length);
-    }
 };
-
-// =============================== INSPECTING =============================== //
-
-/**
- * Checks if the given UTF-8 character is valid.
- *
- * @note This is the same as Zeus::UTF8::is_valid_character.  This non-member
- * function is here to enforce more strict type checking and to increase
- * readability.
- *
- * @see Zeus::UTF8::is_valid_character
- */
-[[nodiscard]] constexpr bool is_valid(Character const& character) {
-    return Zeus::UTF8::is_valid_character(character);
-}
 
 }  // namespace cpp20_v1
 
 }  // namespace UTF8
 
-// ============================== TRANSFORMING ============================== //
+// =============================== INSPECTING =============================== //
 
 constexpr Zeus::UTF8::Character::value_type at(
     Zeus::UTF8::Character const& character,
@@ -239,32 +243,21 @@ constexpr Zeus::UTF8::Character::value_type at(
     return character[index];
 }
 
-constexpr Zeus::UTF8::Character::reference at(
-    Zeus::UTF8::Character& character, Zeus::UTF8::Character::size_type index) {
-    if (index < 0 || index > character.size()) {
-        throw std::out_of_range{"Index out of bounds for UTF-8 character."};
-    }
-
-    return character[index];
-}
+// ============================== TRANSFORMING ============================== //
 
 /**
+* Converts the given character to the IntegerType.
 *
+* @tparam IntegerType The integer type to construct using the character
 *
-* @tparam IntegerType
+* @param character The character to transform into the IntegerType
 *
-* @param character
-*
-* @return
+* @return The given integer transformation of the given character
 */
 template <typename IntegerType>
 requires std::integral<IntegerType>
-[[nodiscard]] constexpr IntegerType to_integer(
-    Zeus::UTF8::Character const& character) {
-    /*
-     * May throw if character is not a valid length.
-     * @see Zeus::UTF8::ValidCharacter
-     */
+[[nodiscard]] constexpr IntegerType to_integer( // NOLINT(bugprone-exception-escape)
+    Zeus::UTF8::Character const& character) noexcept {
     return IntegerType(Memory::to_u32(character));
 }
 

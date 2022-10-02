@@ -24,26 +24,51 @@
 
 #include "zeus/core/assert.hpp"
 #include "zeus/string/utf8/code_unit.hpp"
+#include "zeus/string/utf8/unsafe_iterator.hpp"
 
 namespace Zeus::UTF8 {
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 inline namespace cpp20_v1 {
 
+namespace Internal {
+
+template <std::input_or_output_iterator Iterator>
+[[nodiscard]] constexpr bool starts_with_valid_char(Iterator iterator) {
+    auto const byte_size_opt = Zeus::UTF8::peek_char_size(*iterator);
+
+    return byte_size_opt.has_value() &&
+           (byte_size_opt == 1 || // ASCII
+            std::ranges::all_of(iterator + 1, iterator + byte_size_opt.value(),
+                                Zeus::UTF8::is_continuation_byte));
+}
+
+}  // namespace Internal
+
+/**
+ * Iterates to the first code unit of a valid UTF-8 character.
+ *
+ * @precondition iterator Currently points to a leading code unit byte
+ * @precondition iterator Iterates over a valid UTF-8 character
+ */
 template <std::input_or_output_iterator Iterator>
 [[nodiscard]] constexpr Iterator next(Iterator iterator) {
+    ZEUS_ASSERT(Zeus::UTF8::is_leading_byte(*iterator),
+        "@precondition iterator Currently points to a leading code unit byte");
+    ZEUS_ASSERT(Internal::starts_with_valid_char(iterator),
+                "@precondition iterator Iterates over a valid UTF-8 character");
+
     return std::ranges::next(iterator,
-                             Zeus::UTF8::peek_char_size(*iterator).value());
+                             Zeus::UTF8::leading_byte_size(*iterator));
 }
 
 template <std::input_or_output_iterator Iterator>
 [[nodiscard]] constexpr Iterator next(Iterator iterator,
                                       std::iter_difference_t<Iterator> num) {
-    ZEUS_ASSERT(num > 0, "Number has to be positive.");
+    ZEUS_ASSERT(num >= 0, "@precondition num Number has to be non-negative.");
 
-    while (num > 0) {
+    while (num-- > 0) {
         iterator = Zeus::UTF8::next(iterator);
-        --num;
     }
 
     return iterator;

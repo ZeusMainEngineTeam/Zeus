@@ -86,6 +86,7 @@ template <Zeus::UTF8::code_unit_input_iterator InputIt,
 
     return true;
 }
+
 [[nodiscard]] constexpr bool is_valid_character_sequence(
     Zeus::UTF8::code_unit_input_range auto&& range) {
     return Zeus::UTF8::is_valid_character_sequence(std::ranges::begin(range),

@@ -26,6 +26,8 @@
 #include "zeus/core/types.hpp"
 #include "zeus/string/utf8/character.hpp"
 #include "zeus/string/utf8/iterator.hpp"
+#include "zeus/string/utf8/unsafe_iterator.hpp"
+#include "zeus/string/utf8/safe_iterator.hpp"
 
 /**
  * @file string/utf8/character_iterator.hpp
@@ -36,10 +38,9 @@ namespace Zeus::UTF8 {
 // NOLINTNEXTLINE(readability-identifier-naming)
 inline namespace cpp20_v1 {
 
-//std::convertible_to<std::iter_value_t<Iterator>, Zeus::UTF8::CodeUnit>
-
 template <typename Iterator>
-requires std::bidirectional_iterator<Iterator>
+requires std::bidirectional_iterator<Iterator> &&
+    std::convertible_to<std::iter_value_t<Iterator>, Zeus::UTF8::CodeUnit>
 class CharacterIterator {
    public:
     using this_type = CharacterIterator<Iterator>;
@@ -53,12 +54,10 @@ class CharacterIterator {
     using iterator_category = std::bidirectional_iterator_tag;
 
     // Copy constructor can throw D: - CANNOT be noexcept
-    constexpr explicit CharacterIterator(Iterator iterator)
-        : m_it{iterator} {}
+    constexpr explicit CharacterIterator(Iterator iterator) : m_it{iterator} {}
 
     // Prefix increment (++i)
     constexpr CharacterIterator& operator++() noexcept {
-        // TODO(tristan): Replace this one with safe version
         this->m_it = Zeus::UTF8::next(this->m_it);
 
         this->reset_character();
@@ -94,13 +93,13 @@ class CharacterIterator {
     }
 
     constexpr pointer operator->() {
-        this->init_character_once();
+        this->init_character_once(this->m_it);
 
         return std::addressof(this->m_current.value());
     }
 
     constexpr reference operator*() {
-        this->init_character_once();
+        this->init_character_once(this->m_it);
 
         return this->m_current.value();
     }
@@ -115,25 +114,21 @@ class CharacterIterator {
 
    private:
     Iterator m_it;
-    std::optional<UTF8::Character> m_current;
+    std::optional<UTF8::Character> m_current{};
 
     constexpr void reset_character() noexcept {
         this->m_current.reset();
     }
 
-    void init_character_once() noexcept {
+    void init_character_once(Iterator iter) {
         if (!this->m_current.has_value()) {
-            this->m_current = create_character(this->m_it);
+            auto const byte_size = Zeus::UTF8::leading_byte_size(*iter);
+            auto const last = std::ranges::next(iter, byte_size);
+            
+            this->m_current = Character{iter, last};
         }
     }
 
-    [[nodiscard]] UTF8::Character create_character(Iterator iter) const {
-        auto const byte_size = Zeus::UTF8::leading_byte_size(*iter);
-
-        using size_type = Zeus::UTF8::Character::size_type;
-
-        return {std::to_address(iter), static_cast<size_type>(byte_size)};
-    }
 };
 
 }  // namespace cpp20_v1

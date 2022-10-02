@@ -30,10 +30,7 @@
 #include "zeus/string/unicode/code_point.hpp"
 #include "zeus/string/utf8/algorithm.hpp"
 #include "zeus/string/utf8/character.hpp"
-#include "zeus/string/utf8/valid_character.hpp"
 #include "zeus/string/utf8/character_iterator.hpp"
-
-#include "zeus/string/utf8/updateable_character_iterator.hpp"
 
 namespace Zeus {
 
@@ -63,7 +60,7 @@ class String {
 
     using storage_type = std::u8string;
 
-    using character = Zeus::UTF8::ValidCharacter;
+    using character = Zeus::UTF8::Character;
 
     using size_type = Zeus::ssize;
 
@@ -94,15 +91,11 @@ class String {
 
     [[nodiscard]] String operator+(Zeus::UTF8::Character const& character);
 
-    [[nodiscard]] String operator+(Zeus::UTF8::ValidCharacter character);
-
     [[nodiscard]] String operator+(String const& other);
 
     String& operator+=(code_unit_const_pointer cstr);
 
     String& operator+=(Zeus::UTF8::Character const& character);
-
-    String& operator+=(Zeus::UTF8::ValidCharacter character);
 
     String& operator+=(String const& other);
 
@@ -208,14 +201,11 @@ class String {
 
     // =============================== INSERT =============================== //
 
-    String& insert(code_unit_const_iterator position, code_unit_const_pointer cstr,
-                   size_type count);
+    String& insert(code_unit_const_iterator position,
+                   code_unit_const_pointer cstr, size_type count);
 
     Zeus::UTF8::String& insert(code_unit_const_iterator position,
                                String const& other);
-
-    String& insert(code_unit_const_iterator position,
-                   Zeus::UTF8::ValidCharacter character);
 
     template <Zeus::UTF8::code_unit_input_iterator InputIt,
               std::sentinel_for<InputIt> Sentinel>
@@ -246,9 +236,6 @@ class String {
     String& replace(code_unit_const_iterator first,
                     code_unit_const_iterator last, code_unit_const_pointer cstr,
                     size_type count);
-
-    String& replace(code_unit_const_iterator first,
-                    code_unit_const_iterator last, ValidCharacter character);
 
     String& replace(code_unit_const_iterator first,
                     code_unit_const_iterator last, String const& other);
@@ -325,7 +312,7 @@ class String {
 
     template <std::input_iterator InputIt, std::sentinel_for<InputIt> Sentinel>
     constexpr String(InputIt first, Sentinel last)
-        : m_data{}, m_len{Zeus::UTF8::encode_length(first, last)} {
+        : m_len{Zeus::UTF8::encode_length(first, last)} {
         this->m_data.reserve(this->m_len);
 
         Zeus::UTF8::encode(first, last, this->m_data);
@@ -336,18 +323,21 @@ class String {
 
     // =============================== INSERT =============================== //
 
-    [[nodiscard]] bool is_valid_insert_pos(code_unit_const_iterator position) const;
+    [[nodiscard]] bool is_valid_insert_pos(
+        code_unit_const_iterator position) const;
 
-    String& insert_impl(code_unit_const_iterator position, code_unit_const_pointer cstr,
-                        size_type count, size_type utf8_count);
+    String& insert_impl(code_unit_const_iterator position,
+                        code_unit_const_pointer cstr, size_type count,
+                        size_type utf8_count);
 
-    String& insert_if_impl(code_unit_const_iterator position, code_unit_const_pointer cstr,
-                           size_type count, size_type utf8_count);
+    String& insert_if_impl(code_unit_const_iterator position,
+                           code_unit_const_pointer cstr, size_type count,
+                           size_type utf8_count);
 
     template <Zeus::UTF8::code_unit_input_iterator InputIt,
               std::sentinel_for<InputIt> Sentinel>
-    String& insert_impl(code_unit_const_iterator position, InputIt first, Sentinel last,
-                        size_type utf8_count) {
+    String& insert_impl(code_unit_const_iterator position, InputIt first,
+                        Sentinel last, size_type utf8_count) {
         this->m_len += utf8_count;
         this->m_data.insert(position, first, last);
 
@@ -386,14 +376,16 @@ class String {
 
     // ================================ ERASE =============================== //
 
-    code_unit_const_iterator erase_impl(code_unit_const_iterator first, code_unit_const_iterator last);
+    code_unit_const_iterator erase_impl(code_unit_const_iterator first,
+                                        code_unit_const_iterator last);
 
     // =============================== REPLACE ============================== //
 
     template <Zeus::UTF8::code_unit_input_iterator InputIt,
               std::sentinel_for<InputIt> Sentinel>
-    String& replace_impl(code_unit_const_iterator first, code_unit_const_iterator last,
-                         InputIt first2, Sentinel last2) {
+    String& replace_impl(code_unit_const_iterator first,
+                         code_unit_const_iterator last, InputIt first2,
+                         Sentinel last2) {
         using Zeus::UTF8::calculate_length;
 
         auto const old_utf8_length = calculate_length(first, last);
@@ -405,7 +397,8 @@ class String {
         return *this;
     }
 
-    String& replace_impl(code_unit_const_iterator first, code_unit_const_iterator last,
+    String& replace_impl(code_unit_const_iterator first,
+                         code_unit_const_iterator last,
                          Zeus::UTF8::code_unit_input_range auto&& range) {
         return this->replace_impl(first, last, std::ranges::begin(range),
                                   std::ranges::end(range));
@@ -418,17 +411,15 @@ class String {
 
 // ================================= INSERT ================================= //
 
-Zeus::UTF8::String& insert(Zeus::UTF8::String& string,
-                           Zeus::UTF8::String::code_unit_const_iterator position,
-                           Zeus::UTF8::String::code_unit_const_pointer str);
+Zeus::UTF8::String& insert(
+    Zeus::UTF8::String& string,
+    Zeus::UTF8::String::code_unit_const_iterator position,
+    Zeus::UTF8::String::code_unit_const_pointer str);
 
-Zeus::UTF8::String& insert(Zeus::UTF8::String& string,
-                           Zeus::UTF8::String::code_unit_const_iterator position,
-                           Zeus::Unicode::CodePoint code_point);
-
-Zeus::UTF8::String& insert(Zeus::UTF8::String& string,
-                           Zeus::UTF8::String::code_unit_const_iterator position,
-                           Zeus::UTF8::ValidCharacter character);
+Zeus::UTF8::String& insert(
+    Zeus::UTF8::String& string,
+    Zeus::UTF8::String::code_unit_const_iterator position,
+    Zeus::Unicode::CodePoint code_point);
 
 Zeus::UTF8::String& insert(Zeus::UTF8::String& string,
                            Zeus::UTF8::String::size_type index,
@@ -439,21 +430,19 @@ Zeus::UTF8::String& insert(Zeus::UTF8::String& string,
                            Zeus::UTF8::String::size_type index,
                            Zeus::UTF8::String const& other);
 
-Zeus::UTF8::String& insert(Zeus::UTF8::String& string,
-                           Zeus::UTF8::String::size_type index,
-                           Zeus::UTF8::ValidCharacter character);
-
 template <Zeus::UTF8::code_unit_input_iterator InputIt,
           std::sentinel_for<InputIt> Sentinel>
-Zeus::UTF8::String& insert(Zeus::UTF8::String& string,
-                           Zeus::UTF8::String::code_unit_const_iterator position,
-                           InputIt first, Sentinel last) {
+Zeus::UTF8::String& insert(
+    Zeus::UTF8::String& string,
+    Zeus::UTF8::String::code_unit_const_iterator position, InputIt first,
+    Sentinel last) {
     return string.insert(position, first, last);
 }
 
-Zeus::UTF8::String& insert(Zeus::UTF8::String& string,
-                           Zeus::UTF8::String::code_unit_const_iterator position,
-                           Zeus::UTF8::code_unit_input_range auto&& range) {
+Zeus::UTF8::String& insert(
+    Zeus::UTF8::String& string,
+    Zeus::UTF8::String::code_unit_const_iterator position,
+    Zeus::UTF8::code_unit_input_range auto&& range) {
     return Zeus::insert(string, position, std::ranges::begin(range),
                         std::ranges::end(range));
 }
@@ -488,9 +477,6 @@ Zeus::UTF8::String& append(Zeus::UTF8::String& str,
 
 Zeus::UTF8::String& append(Zeus::UTF8::String& str,
                            Zeus::UTF8::Character const& character);
-
-Zeus::UTF8::String& append(Zeus::UTF8::String& str,
-                           Zeus::UTF8::ValidCharacter character);
 
 Zeus::UTF8::String& append(Zeus::UTF8::String& str,
                            Zeus::UTF8::String const& other);
