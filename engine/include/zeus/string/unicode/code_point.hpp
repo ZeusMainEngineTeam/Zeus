@@ -19,6 +19,7 @@
 #pragma once
 
 #include <concepts>
+#include <optional>
 #include <string>
 
 #include "zeus/core/types.hpp"
@@ -42,7 +43,7 @@ namespace Unicode {
 class CodePoint {
    public:
     /**
-     * The inner representation of the Unicode code point value.
+     * The fundamental representation of the Unicode code point value.
      */
     using value_type = Zeus::u32;
 
@@ -76,13 +77,36 @@ class CodePoint {
         : m_value{CodePoint::validate_value(value)} {}
 
     /**
+     * Constructs an optional Unicode code point using the given value if valid.
+     *
+     * @param value The value to use to create a Unicode code point
+     *
+     * @return The Unicode code point if the given value is valid, otherwise
+     * std::nullopt
+     */
+    [[nodiscard]] static std::optional<CodePoint> create(
+        value_type value) noexcept {
+        if (value <= CodePoint::g_rawMax) {
+            return CodePoint{value};
+        }
+
+        return std::nullopt;
+    }
+
+    /**
      * Default CodePoint three-way comparison with strong_ordering.
      */
     [[nodiscard]] constexpr auto operator<=>(CodePoint const&) const noexcept =
         default;
 
     /**
-     * value_type three-way comparison with strong_ordering.
+     * The three-way comparison with strong_ordering for the fundamental
+     * representation of a Unicode code point.
+     *
+     * @param value The value to compare against this Unicode code point
+     *
+     * @return The strong ordering comparison between the given value and this
+     * Unicode code point
      */
     [[nodiscard]] constexpr auto operator<=>(value_type value) const noexcept {
         return this->m_value <=> value;
