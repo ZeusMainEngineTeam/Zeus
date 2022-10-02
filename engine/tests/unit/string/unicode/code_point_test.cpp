@@ -79,9 +79,10 @@ TEST(CodePoint, createFailure) {
 TEST(CodePoint, copyAssignmentOperator) {
     using Zeus::Unicode::CodePoint;
 
+    // Just init with random values
     CodePoint current_max_code_point{4};
-    CodePoint current_min_code_point{1};
-    CodePoint current_zero_code_point{0};
+    CodePoint current_min_code_point{23};
+    CodePoint current_zero_code_point{32};
 
     // Try to enforce copy assignment operator
     ASSERT_NO_THROW({
