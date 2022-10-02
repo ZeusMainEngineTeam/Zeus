@@ -38,6 +38,7 @@ TEST(CodePoint, valueConstructorSuccess) {
 TEST(CodePoint, valueConstructorFailure) {
     using Zeus::Unicode::CodePoint;
 
+    // Test edge cases
     EXPECT_THROW(CodePoint(CodePoint::g_rawMax + 1), Zeus::Unicode::Exception);
     EXPECT_THROW(CodePoint(-1), Zeus::Unicode::Exception);
 }

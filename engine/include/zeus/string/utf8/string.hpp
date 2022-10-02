@@ -157,7 +157,8 @@ class String {
     [[nodiscard]] static std::optional<String> encode(InputIt first,
                                                       Sentinel last) {
         // Make sure data is valid Unicode
-        if (std::ranges::all_of(first, last, Zeus::Unicode::is_valid)) {
+        if (std::ranges::all_of(first, last,
+                                Zeus::Unicode::CodePoint::is_valid)) {
             return Zeus::UTF8::String{first, last};
         }
 

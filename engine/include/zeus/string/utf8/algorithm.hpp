@@ -274,7 +274,7 @@ template <std::input_iterator InputIt, std::sentinel_for<InputIt> Sentinel>
         return std::nullopt;
     }
 
-    if (!Zeus::Unicode::is_valid(code_point_value)) [[unlikely]] {
+    if (!Zeus::Unicode::CodePoint::is_valid(code_point_value)) [[unlikely]] {
         return std::nullopt;
     }
 

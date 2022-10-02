@@ -21,17 +21,20 @@
 #include <stdexcept>
 #include <string>
 
-namespace Zeus {
-
-namespace Unicode {
+namespace Zeus::Unicode {
 
 class Exception : public std::logic_error {
    public:
-    explicit Exception(char const* message) : std::logic_error{message} {}
+    explicit Exception(char const* message)
+        : std::logic_error{message} {}
 
-    virtual ~Exception() {}
+    ~Exception() override = default;
+
+    Exception(Exception const&) noexcept = default;
+    Exception(Exception&&) noexcept = default;
+
+    Exception& operator=(Exception const&) noexcept = default;
+    Exception& operator=(Exception&&) noexcept = default;
 };
 
-}  // namespace Unicode
-
-}  // namespace Zeus
+}  // namespace Zeus::Unicode

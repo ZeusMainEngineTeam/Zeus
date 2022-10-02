@@ -72,6 +72,7 @@ class CodePoint {
      *
      * @see Zeus::Unicode::CodePoint::g_rawMax
      * @see Zeus::Unicode::CodePoint::g_rawMin
+     * @see Zeus::Unicode::CodePoint::is_valid
      */
     constexpr explicit CodePoint(value_type value)
         : m_value{CodePoint::validate_value(value)} {}
@@ -86,7 +87,7 @@ class CodePoint {
      */
     [[nodiscard]] static std::optional<CodePoint> create(
         value_type value) noexcept {
-        if (value <= CodePoint::g_rawMax) {
+        if (CodePoint::is_valid(value)) {
             return CodePoint{value};
         }
 
@@ -140,6 +141,18 @@ class CodePoint {
      */
     static CodePoint const g_replacementCharacter;
 
+    /**
+    * Checks if the given value is in range of a valid Unicode code point.
+    *
+    * @param point The value for a Unicode code point to check
+    *
+    * @return True if the given value is within the valid Unicode code point range,
+    * otherwise false
+    */
+    [[nodiscard]] static constexpr bool is_valid(value_type point) noexcept {
+        return point <= CodePoint::g_rawMax && point >= CodePoint::g_rawMin;
+    }
+
    private:
     /**
      * The value containing the Unicode code point.
@@ -149,7 +162,7 @@ class CodePoint {
     value_type m_value{};
 
     /**
-     * Member helper function to validate the Unicode code point value.
+     * Helper to validate the Unicode code point value.
      *
      * @param value The value for the Unicode code point
      *
@@ -159,8 +172,8 @@ class CodePoint {
      * @return The given value
      */
     [[nodiscard]] static constexpr value_type validate_value(value_type value) {
-        if (value > g_rawMax) {
-            throw Zeus::Unicode::Exception{"Invalid code point."};
+        if (!CodePoint::is_valid(value)) {
+            throw Zeus::Unicode::Exception{"Invalid Unicode code point value."};
         }
 
         return value;
@@ -170,18 +183,6 @@ class CodePoint {
 template <std::integral IntegerType>
 [[nodiscard]] constexpr auto to_integer(CodePoint point) noexcept {
     return IntegerType(point.m_value);
-}
-
-/**
- * Checks if the given value is in range of a valid Unicode code point.
- *
- * @param point The value for a Unicode code point to check
- *
- * @return True if the given value is within the valid Unicode code point range,
- * otherwise false
- */
-[[nodiscard]] constexpr bool is_valid(CodePoint::value_type point) noexcept {
-    return point <= CodePoint::g_rawMax && point >= CodePoint::g_rawMin;
 }
 
 }  // namespace Unicode
