@@ -35,6 +35,9 @@ namespace Zeus {
 
 namespace Unicode {
 
+// NOLINTNEXTLINE(readability-identifier-naming)
+inline namespace cpp20_v1 {
+
 /**
  * A Unicode code point.
  *
@@ -50,12 +53,12 @@ class CodePoint {
     /**
      * The maximum possible value for a valid Unicode code point.
      */
-    static constexpr value_type g_rawMax = 0x10FFFFU;
+    static constexpr value_type g_maxValue = 0x10FFFFU;
 
     /**
      * The minimum possible value for a valid Unicode code point.
      */
-    static constexpr value_type g_rawMin = 0x0U;
+    static constexpr value_type g_minValue = 0x0U;
 
     /**
      * Default constructor.
@@ -85,10 +88,14 @@ class CodePoint {
      * @return The Unicode code point if the given value is valid, otherwise
      * std::nullopt
      */
-    [[nodiscard]] static std::optional<CodePoint> create(
+    [[nodiscard]] static constexpr std::optional<CodePoint> create(
         value_type value) noexcept {
         if (CodePoint::is_valid(value)) {
-            return CodePoint{value};
+            // Have to construct this way to avoid additional validation check
+            CodePoint code_point;
+            code_point.m_value = value;
+
+            return code_point;
         }
 
         return std::nullopt;
@@ -99,6 +106,11 @@ class CodePoint {
      */
     [[nodiscard]] constexpr auto operator<=>(CodePoint const&) const noexcept =
         default;
+
+    [[nodiscard]] constexpr bool operator==(
+        CodePoint code_point) const noexcept {
+        return this->m_value == code_point.m_value;
+    }
 
     /**
      * The three-way comparison with strong_ordering for the fundamental
@@ -111,6 +123,10 @@ class CodePoint {
      */
     [[nodiscard]] constexpr auto operator<=>(value_type value) const noexcept {
         return this->m_value <=> value;
+    }
+
+    [[nodiscard]] constexpr auto operator==(value_type value) const noexcept {
+        return this->m_value == value;
     }
 
     /**
@@ -126,22 +142,6 @@ class CodePoint {
     friend constexpr auto to_integer(Zeus::Unicode::CodePoint point) noexcept;
 
     /**
-     * The maximum Unicode code point.
-     */
-    static CodePoint const g_max;
-
-    /**
-     * The minimum Unicode code point.
-     */
-    static CodePoint const g_min;
-
-    /**
-     * The default replacement character for replacing a invalid UTF-8
-     * character.
-     */
-    static CodePoint const g_replacementCharacter;
-
-    /**
     * Checks if the given value is in range of a valid Unicode code point.
     *
     * @param point The value for a Unicode code point to check
@@ -150,7 +150,7 @@ class CodePoint {
     * otherwise false
     */
     [[nodiscard]] static constexpr bool is_valid(value_type point) noexcept {
-        return point <= CodePoint::g_rawMax && point >= CodePoint::g_rawMin;
+        return point <= CodePoint::g_maxValue && point >= CodePoint::g_minValue;
     }
 
    private:
@@ -184,6 +184,30 @@ template <std::integral IntegerType>
 [[nodiscard]] constexpr auto to_integer(CodePoint point) noexcept {
     return IntegerType(point.m_value);
 }
+
+/**
+ * Contains commonly constructed Unicode code points for reuse.
+ */
+namespace CodePoints {
+
+/**
+* The maximum Unicode code point.
+*/
+inline constexpr CodePoint g_max{CodePoint::g_maxValue};
+
+/**
+* The minimum Unicode code point.
+*/
+inline constexpr CodePoint g_min{CodePoint::g_minValue};
+
+/**
+* The default replacement character for replacing an invalid UTF-8 character.
+*/
+inline constexpr CodePoint g_replacementCharacter{0xFFFDU};
+
+}  // namespace CodePoints
+
+}  // namespace cpp20_v1
 
 }  // namespace Unicode
 

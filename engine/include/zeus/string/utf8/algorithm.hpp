@@ -294,7 +294,7 @@ requires std::convertible_to<Unicode::CodePoint, std::iter_value_t<OutputIt>>
 constexpr decode_result<InputIt, OutputIt> decode(
     InputIt first, Sentinel last, OutputIt result,
     Unicode::CodePoint replace_character =
-        Unicode::CodePoint::g_replacementCharacter) noexcept {
+        Unicode::CodePoints::g_replacementCharacter) noexcept {
     while (first != last) {
         auto const count = peek_char_size(*first);
         auto const distance = std::ranges::distance(first, last);
@@ -357,7 +357,7 @@ requires std::convertible_to<Unicode::CodePoint, std::iter_value_t<OutputIt>>
 constexpr decode_result<std::ranges::borrowed_iterator_t<Range>, OutputIt>
 decode(Range&& range, OutputIt result,
        Unicode::CodePoint replace_character =
-           Unicode::CodePoint::g_replacementCharacter) noexcept {
+           Unicode::CodePoints::g_replacementCharacter) noexcept {
     return decode(std::ranges::begin(range), std::ranges::end(range),
                   std::move(result), replace_character);
 }
