@@ -1,5 +1,8 @@
 #include "gtest/gtest.h"
 
+#include <type_traits>
+#include <sstream>
+
 #include "zeus/string/unicode/code_point.hpp"
 
 /**
@@ -88,31 +91,79 @@ TEST(CodePoint, copyAssignmentOperator) {
         current_zero_code_point = g_zeroCodePoint;
     }
 
-    ASSERT_EQ(current_max_code_point, g_maxCodePoint);
-    ASSERT_EQ(current_min_code_point, g_minCodePoint);
-    ASSERT_EQ(current_zero_code_point, g_zeroCodePoint);
+    EXPECT_EQ(current_max_code_point, g_maxCodePoint);
+    EXPECT_EQ(current_min_code_point, g_minCodePoint);
+    EXPECT_EQ(current_zero_code_point, g_zeroCodePoint);
+}
+
+// ============================= FREE FUNCTIONS ============================= //
+
+TEST(CodePoint, isValid) {
+    using Zeus::Unicode::CodePoint;
+
+    EXPECT_TRUE(CodePoint::is_valid(0));
+    EXPECT_TRUE(CodePoint::is_valid(CodePoint::g_minValue));
+    EXPECT_TRUE(CodePoint::is_valid(CodePoint::g_maxValue));
+
+    EXPECT_TRUE(CodePoint::is_valid(1));
+    EXPECT_TRUE(CodePoint::is_valid(CodePoint::g_minValue + 1));
+    EXPECT_TRUE(CodePoint::is_valid(CodePoint::g_maxValue - 1));
+
+    EXPECT_FALSE(CodePoint::is_valid(-1));
+    EXPECT_FALSE(CodePoint::is_valid(CodePoint::g_minValue - 1));
+    EXPECT_FALSE(CodePoint::is_valid(CodePoint::g_maxValue + 1));
 }
 
 TEST(CodePoint, toInteger) {
     using Zeus::Unicode::CodePoint;
     using value_type = CodePoint::value_type;
 
-    ASSERT_EQ(Zeus::to_integer<value_type>(g_maxCodePoint),
+    EXPECT_EQ(Zeus::to_integer<value_type>(g_maxCodePoint),
               CodePoint::g_maxValue);
-    ASSERT_EQ(Zeus::to_integer<value_type>(g_minCodePoint),
+    EXPECT_EQ(Zeus::to_integer<value_type>(g_minCodePoint),
               CodePoint::g_minValue);
-    ASSERT_EQ(Zeus::to_integer<value_type>(g_zeroCodePoint), 0);
+    EXPECT_EQ(Zeus::to_integer<value_type>(g_zeroCodePoint), 0);
+
+    EXPECT_EQ(Zeus::to_integer(g_maxCodePoint), CodePoint::g_maxValue);
+    EXPECT_EQ(Zeus::to_integer(g_minCodePoint), CodePoint::g_minValue);
+    EXPECT_EQ(Zeus::to_integer(g_zeroCodePoint), 0);
 }
 
-TEST(CodePoint, CodePoints) {
+TEST(CodePoint, toString) {
     using Zeus::Unicode::CodePoint;
-    namespace CodePoints = Zeus::Unicode::CodePoints;
 
-    using value_type = CodePoint::value_type;
+    auto constexpr latin_small_letter_N = CodePoint{0x006EU};
 
-    ASSERT_EQ(CodePoints::g_max, CodePoint::g_maxValue);
-    ASSERT_EQ(CodePoints::g_min, CodePoint::g_minValue);
-    ASSERT_EQ(CodePoints::g_replacementCharacter, 0xFFFDU);
+    EXPECT_EQ(Zeus::to_string(latin_small_letter_N), "U+006E");
+    EXPECT_EQ(Zeus::to_string(g_maxCodePoint), "U+10FFFF");
+    EXPECT_EQ(Zeus::to_string(g_minCodePoint), "U+0");
+}
+
+TEST(CodePoint, ostream) {
+    using Zeus::cpp20_v1::operator<<;
+    using Zeus::Unicode::CodePoint;
+
+    std::ostringstream stream;
+
+    {
+        auto constexpr latin_small_letter_n = CodePoint{0x006EU};
+        stream << latin_small_letter_n;
+
+        EXPECT_EQ(stream.str(), "U+006E");
+        stream.str("");
+    }
+
+    {
+        stream << g_maxCodePoint;
+        EXPECT_EQ(stream.str(), "U+10FFFF");
+        stream.str("");
+    }
+
+    {
+        stream << g_maxCodePoint;
+        EXPECT_EQ(stream.str(), "U+0");
+        stream.str("");
+    }
 }
 
 }  // namespace

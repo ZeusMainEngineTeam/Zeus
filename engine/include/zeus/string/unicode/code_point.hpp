@@ -20,6 +20,7 @@
 
 #include <concepts>
 #include <optional>
+#include <ostream>
 #include <string>
 
 #include "zeus/core/types.hpp"
@@ -32,6 +33,27 @@
  */
 
 namespace Zeus {
+
+namespace Unicode {
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+inline namespace cpp20_v1 {
+
+// Forward declare for non-member friend function(s)
+class CodePoint;
+
+}  // namespace cpp20_v1
+
+}  // namespace Unicode
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+inline namespace cpp20_v1 {
+
+template <std::integral IntegerType>
+[[nodiscard]] constexpr auto to_integer(
+    Zeus::Unicode::CodePoint point) noexcept;
+
+}  // namespace cpp20_v1
 
 namespace Unicode {
 
@@ -102,7 +124,7 @@ class CodePoint {
     }
 
     /**
-     * Default CodePoint three-way comparison with strong_ordering.
+     * CodePoint three-way comparison.
      */
     [[nodiscard]] constexpr auto operator<=>(CodePoint const&) const noexcept =
         default;
@@ -139,16 +161,16 @@ class CodePoint {
      * @return An IntegerType representation of the given code point
      */
     template <std::integral IntegerType>
-    friend constexpr auto to_integer(Zeus::Unicode::CodePoint point) noexcept;
+    friend constexpr auto Zeus::cpp20_v1::to_integer(CodePoint point) noexcept;
 
     /**
-    * Checks if the given value is in range of a valid Unicode code point.
-    *
-    * @param point The value for a Unicode code point to check
-    *
-    * @return True if the given value is within the valid Unicode code point range,
-    * otherwise false
-    */
+     * Checks if the given value is in range of a valid Unicode code point.
+     *
+     * @param point The value for a Unicode code point to check
+     *
+     * @return True if the given value is within the valid Unicode code point
+     * range, otherwise false
+     */
     [[nodiscard]] static constexpr bool is_valid(value_type point) noexcept {
         return point <= CodePoint::g_maxValue && point >= CodePoint::g_minValue;
     }
@@ -173,43 +195,19 @@ class CodePoint {
      */
     [[nodiscard]] static constexpr value_type validate_value(value_type value) {
         if (!CodePoint::is_valid(value)) {
-            throw Zeus::Unicode::Exception{"Invalid Unicode code point value."};
+            throw Unicode::Exception{"Invalid Unicode code point value."};
         }
 
         return value;
     }
 };
 
-template <std::integral IntegerType>
-[[nodiscard]] constexpr auto to_integer(CodePoint point) noexcept {
-    return IntegerType(point.m_value);
-}
-
-/**
- * Contains commonly constructed Unicode code points for reuse.
- */
-namespace CodePoints {
-
-/**
-* The maximum Unicode code point.
-*/
-inline constexpr CodePoint g_max{CodePoint::g_maxValue};
-
-/**
-* The minimum Unicode code point.
-*/
-inline constexpr CodePoint g_min{CodePoint::g_minValue};
-
-/**
-* The default replacement character for replacing an invalid UTF-8 character.
-*/
-inline constexpr CodePoint g_replacementCharacter{0xFFFDU};
-
-}  // namespace CodePoints
-
 }  // namespace cpp20_v1
 
 }  // namespace Unicode
+
+// NOLINTNEXTLINE(readability-identifier-naming)
+inline namespace cpp20_v1 {
 
 /**
  * Converts the given Unicode code point to the IntegerType.
@@ -219,20 +217,45 @@ inline constexpr CodePoint g_replacementCharacter{0xFFFDU};
  * @param point The code point to convert
  *
  * @return An IntegerType representation of the given code point
-*/
+ */
 template <std::integral IntegerType>
-[[nodiscard]] constexpr auto to_integer(
-    Zeus::Unicode::CodePoint point) noexcept {
-    return Zeus::Unicode::to_integer<IntegerType>(point);
+[[nodiscard]] constexpr auto to_integer(Unicode::CodePoint point) noexcept {
+    return static_cast<IntegerType>(point.m_value);
+}
+
+/**
+ * Converts the given Unicode code point to its underlying type.
+ *
+ * @param point The code point to convert
+ *
+ * @return The converted Unicode code point
+ */
+[[nodiscard]] constexpr auto to_integer(Unicode::CodePoint point) noexcept {
+    return Zeus::to_integer<Unicode::CodePoint::value_type>(point);
 }
 
 /**
  * Converts the given Unicode code point into a string representation.
  *
+ * @example U+006E
+ *
  * @param point The Unicode code point to convert
  *
  * @return The string representation
  */
-[[nodiscard]] std::string to_string(Zeus::Unicode::CodePoint point) noexcept;
+[[nodiscard]] std::string to_string(Unicode::CodePoint point);
+
+/**
+ * Sends the given Unicode code point in a string representation to the given
+ * stream.
+ *
+ * @param stream The output stream for the Unicode code point
+ * @param point  The Unicode code point to send to the given stream
+ *
+ * @return A reference to the given stream
+ */
+std::ostream& operator<<(std::ostream& stream, Unicode::CodePoint point);
+
+}  // namespace cpp20_v1
 
 }  // namespace Zeus

@@ -25,6 +25,7 @@
 #include <string>
 
 #include "zeus/string/unicode/code_point.hpp"
+#include "zeus/string/unicode/code_points.hpp"
 #include "zeus/string/utf8/code_unit.hpp"
 #include "zeus/string/utf8/iterator.hpp"
 

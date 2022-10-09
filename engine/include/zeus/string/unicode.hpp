@@ -18,5 +18,6 @@
 
 #pragma once
 
-#include "zeus/string/unicode/code_point.hpp"
 #include "zeus/string/unicode/exception.hpp"
+#include "zeus/string/unicode/code_point.hpp"
+#include "zeus/string/unicode/code_points.hpp"
