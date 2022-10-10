@@ -43,8 +43,9 @@ TEST(CodePoint, valueConstructorFailure) {
 
 TEST(CodePoint, copyConstructor) {
     using Zeus::Unicode::CodePoint;
-
-    ASSERT_EQ(g_maxCodePoint, CodePoint{g_maxCodePoint});
+    auto a = CodePoint{g_maxCodePoint};
+    ASSERT_TRUE(g_maxCodePoint == a);
+    //ASSERT_EQ(g_maxCodePoint, CodePoint{g_maxCodePoint});
     ASSERT_EQ(g_minCodePoint, CodePoint{g_minCodePoint});
     ASSERT_EQ(g_zeroCodePoint, CodePoint{g_zeroCodePoint});
 }
@@ -94,6 +95,34 @@ TEST(CodePoint, copyAssignmentOperator) {
     EXPECT_EQ(current_max_code_point, g_maxCodePoint);
     EXPECT_EQ(current_min_code_point, g_minCodePoint);
     EXPECT_EQ(current_zero_code_point, g_zeroCodePoint);
+}
+
+TEST(CodePoint, operators) {
+    using Zeus::Unicode::CodePoint;
+
+    EXPECT_TRUE(g_maxCodePoint == g_maxCodePoint);
+    EXPECT_FALSE(g_maxCodePoint != g_maxCodePoint);
+    EXPECT_FALSE(g_maxCodePoint > g_maxCodePoint);
+    EXPECT_FALSE(g_maxCodePoint < g_maxCodePoint);
+    EXPECT_TRUE(g_maxCodePoint >= g_maxCodePoint);
+    EXPECT_TRUE(g_maxCodePoint <= g_maxCodePoint);
+
+    EXPECT_TRUE(g_maxCodePoint == CodePoint::g_maxValue);
+    EXPECT_TRUE(CodePoint::g_maxValue == g_maxCodePoint);
+    EXPECT_FALSE(g_maxCodePoint != CodePoint::g_maxValue);
+    EXPECT_FALSE(CodePoint::g_maxValue != g_maxCodePoint);
+
+    EXPECT_FALSE(CodePoint::g_maxValue != g_maxCodePoint);
+    EXPECT_FALSE(CodePoint::g_maxValue > g_maxCodePoint);
+    EXPECT_FALSE(CodePoint::g_maxValue < g_maxCodePoint);
+    EXPECT_TRUE(CodePoint::g_maxValue >= g_maxCodePoint);
+    EXPECT_TRUE(CodePoint::g_maxValue <= g_maxCodePoint);
+
+    EXPECT_FALSE(g_maxCodePoint != CodePoint::g_maxValue);
+    EXPECT_FALSE(g_maxCodePoint > CodePoint::g_maxValue);
+    EXPECT_FALSE(g_maxCodePoint < CodePoint::g_maxValue);
+    EXPECT_TRUE(g_maxCodePoint >= CodePoint::g_maxValue);
+    EXPECT_TRUE(g_maxCodePoint <= CodePoint::g_maxValue);
 }
 
 // ============================= FREE FUNCTIONS ============================= //

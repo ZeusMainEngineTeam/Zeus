@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <compare>
 #include <concepts>
 #include <optional>
 #include <ostream>
@@ -29,7 +30,7 @@
 /**
  * @file string/unicode/code_point.hpp
  *
- * Provides a lightweight support wrapper for Unicode code points.
+ * Provides a lightweight wrapper for Unicode code points.
  */
 
 namespace Zeus {
@@ -50,8 +51,7 @@ class CodePoint;
 inline namespace cpp20_v1 {
 
 template <std::integral IntegerType>
-[[nodiscard]] constexpr auto to_integer(
-    Zeus::Unicode::CodePoint point) noexcept;
+[[nodiscard]] constexpr auto to_integer(Unicode::CodePoint point) noexcept;
 
 }  // namespace cpp20_v1
 
@@ -63,12 +63,12 @@ inline namespace cpp20_v1 {
 /**
  * A Unicode code point.
  *
- * @note This will be a valid Unicode code point.
+ * @note This will **always** be a valid Unicode code point.
  */
 class CodePoint {
    public:
     /**
-     * The fundamental representation of the Unicode code point value.
+     * The underlying representation of the Unicode code point value.
      */
     using value_type = Zeus::u32;
 
@@ -95,8 +95,8 @@ class CodePoint {
      * @throws Zeus::Unicode::Exception if the given value is not within the
      * valid Unicode code point range.
      *
-     * @see Zeus::Unicode::CodePoint::g_rawMax
-     * @see Zeus::Unicode::CodePoint::g_rawMin
+     * @see Zeus::Unicode::CodePoint::g_maxValue
+     * @see Zeus::Unicode::CodePoint::g_minValue
      * @see Zeus::Unicode::CodePoint::is_valid
      */
     constexpr explicit CodePoint(value_type value)
@@ -126,17 +126,16 @@ class CodePoint {
     /**
      * CodePoint three-way comparison.
      */
-    [[nodiscard]] constexpr auto operator<=>(CodePoint const&) const noexcept =
-        default;
-
-    [[nodiscard]] constexpr bool operator==(
-        CodePoint code_point) const noexcept {
-        return this->m_value == code_point.m_value;
-    }
+    [[nodiscard]] constexpr auto operator<=>(CodePoint const&) const = default;
 
     /**
-     * The three-way comparison with strong_ordering for the fundamental
-     * representation of a Unicode code point.
+     * Compares this Unicode code point against the given code point.
+     */
+    [[nodiscard]] constexpr bool operator==(
+        CodePoint const& other) const noexcept = default;
+
+    /**
+     * Compares this Unicode code point against the given value.
      *
      * @param value The value to compare against this Unicode code point
      *
@@ -147,12 +146,19 @@ class CodePoint {
         return this->m_value <=> value;
     }
 
+    /**
+     * Compares this Unicode code point against the given value.
+     *
+     * @param value The value to compare to this Unicode code point
+     *
+     * @return True if equal, otherwise false
+     */
     [[nodiscard]] constexpr auto operator==(value_type value) const noexcept {
         return this->m_value == value;
     }
 
     /**
-     * Converts the given Unicode code point to the IntegerType.
+     * Converts the given Unicode code point to the given IntegerType.
      *
      * @tparam IntegerType The integer type to convert to
      *
@@ -179,7 +185,7 @@ class CodePoint {
     /**
      * The value containing the Unicode code point.
      *
-     * @note This invariant will always be a valid Unicode code point.
+     * @note Default is the same as a Null Unicode code point U+0000
      */
     value_type m_value{};
 
@@ -210,7 +216,7 @@ class CodePoint {
 inline namespace cpp20_v1 {
 
 /**
- * Converts the given Unicode code point to the IntegerType.
+ * Converts the given Unicode code point to the given IntegerType.
  *
  * @tparam IntegerType The integer type to convert to
  *
