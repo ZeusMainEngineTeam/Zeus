@@ -29,6 +29,9 @@
 
 namespace Zeus::Unicode::Exception {
 
+// NOLINTNEXTLINE(readability-identifier-naming)
+inline namespace cpp20_v1 {
+
 /**
  * An exception for invalid Unicode code points.
  */
@@ -46,5 +49,7 @@ class InvalidCodePoint : public std::logic_error {
     InvalidCodePoint& operator=(InvalidCodePoint const&) noexcept = default;
     InvalidCodePoint& operator=(InvalidCodePoint&&) noexcept = default;
 };
+
+}  // namespace cpp20_v1
 
 }  // namespace Zeus::Unicode::Exception
