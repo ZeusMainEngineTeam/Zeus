@@ -7,10 +7,10 @@
  * Software Foundation, either version 3 of the License, or (at your option) any
  * later version.
  *
- * The Zeus Game Engine is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
- * Public License for more details.
+ * The Zeus Game Engine is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
  * You should have received a copy of the GNU General Public License along with
  * the Zeus Game Engine. If not, see <https://www.gnu.org/licenses/>.
@@ -21,20 +21,30 @@
 #include <stdexcept>
 #include <string>
 
-namespace Zeus::Unicode {
+/**
+ * @file string/unicode/exception.hpp
+ *
+ * Contains Unicode exceptions.
+ */
 
-class Exception : public std::logic_error {
+namespace Zeus::Unicode::Exception {
+
+/**
+ * An exception for invalid Unicode code points.
+ */
+class InvalidCodePoint : public std::logic_error {
    public:
-    explicit Exception(char const* message)
-        : std::logic_error{message} {}
+    explicit InvalidCodePoint(char const* msg) : std::logic_error{msg} {}
 
-    ~Exception() override = default;
+    explicit InvalidCodePoint(std::string const& msg) : std::logic_error{msg} {}
 
-    Exception(Exception const&) noexcept = default;
-    Exception(Exception&&) noexcept = default;
+    ~InvalidCodePoint() override = default;
 
-    Exception& operator=(Exception const&) noexcept = default;
-    Exception& operator=(Exception&&) noexcept = default;
+    InvalidCodePoint(InvalidCodePoint const&) noexcept = default;
+    InvalidCodePoint(InvalidCodePoint&&) noexcept = default;
+
+    InvalidCodePoint& operator=(InvalidCodePoint const&) noexcept = default;
+    InvalidCodePoint& operator=(InvalidCodePoint&&) noexcept = default;
 };
 
-}  // namespace Zeus::Unicode
+}  // namespace Zeus::Unicode::Exception

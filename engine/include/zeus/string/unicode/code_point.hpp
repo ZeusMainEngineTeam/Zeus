@@ -92,8 +92,8 @@ class CodePoint {
      *
      * @param value The value to construct the Unicode code point
      *
-     * @throws Zeus::Unicode::Exception if the given value is not within the
-     * valid Unicode code point range.
+     * @throws Zeus::Unicode::Exception::InvalidCodePoint if the given value is
+     * not within the valid Unicode code point range.
      *
      * @see Zeus::Unicode::CodePoint::g_maxValue
      * @see Zeus::Unicode::CodePoint::g_minValue
@@ -185,7 +185,7 @@ class CodePoint {
     /**
      * The value containing the Unicode code point.
      *
-     * @note Default is the same as a Null Unicode code point U+0000
+     * @note Default is the same as a Null Unicode code point (U+0000).
      */
     value_type m_value{};
 
@@ -194,17 +194,18 @@ class CodePoint {
      *
      * @param value The value for the Unicode code point
      *
-     * @throws Zeus::Unicode::Exception if the given value is not in the Unicode
-     * code point range
+     * @throws Zeus::Unicode::Exception::InvalidCodePoint if the given value is
+     * not in the Unicode code point range
      *
      * @return The given value
      */
     [[nodiscard]] static constexpr value_type validate_value(value_type value) {
-        if (!CodePoint::is_valid(value)) {
-            throw Unicode::Exception{"Invalid Unicode code point value."};
+        if (CodePoint::is_valid(value)) [[likely]] {
+            return value;
         }
 
-        return value;
+        using Unicode::Exception::InvalidCodePoint;
+        throw InvalidCodePoint{"Invalid Unicode code point value."};
     }
 };
 
