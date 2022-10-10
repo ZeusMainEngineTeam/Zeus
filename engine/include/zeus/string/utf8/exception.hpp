@@ -22,16 +22,23 @@
 
 #include "zeus/string/utf8/code_unit.hpp"
 
-namespace Zeus::UTF8 {
+namespace Zeus::UTF8::Exception {
 
-class Exception : public std::exception {};
+// NOLINTNEXTLINE(readability-identifier-naming)
+inline namespace cpp20_v1 {
 
-class InvalidCodeUnit : public Exception {
-   public:
-    InvalidCodeUnit(Zeus::UTF8::CodeUnit code_unit) {}
-   private:
+/*
+class InvalidCharacter : public std::runtime_error {
+
 };
 
-class InvalidUTF8 : public Exception {};
+class InvalidCodeUnit : public std::runtime_error {
+   public:
+    explicit InvalidCodeUnit(UTF8::CodeUnit code_unit)
+        : std::runtime_error{code_unit} {}
+};
+*/
 
-}  // namespace Zeus::UTF8
+}  // namespace cpp20_v1
+
+}  // namespace Zeus::UTF8::Exception

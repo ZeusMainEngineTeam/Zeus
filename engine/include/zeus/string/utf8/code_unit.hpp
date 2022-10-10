@@ -30,7 +30,7 @@
  * @file string/utf8/code_unit.hpp
  */
 
-namespace Zeus::UTF8{
+namespace Zeus::UTF8 {
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 inline namespace cpp20_v1 {
@@ -48,6 +48,9 @@ concept code_unit_input_iterator = Zeus::input_iterator_of<Iterator, CodeUnit>;
 
 // =============================== INSPECTING =============================== //
 
+inline constexpr CodeUnit g_minLeadingByte{0};              // 0xxx xxxx
+inline constexpr CodeUnit g_maxLeadingByte{0b1111'0111};    // 1111 0xxx
+
 /**
  * Checks if the given code unit is ASCII.
  *
@@ -57,8 +60,7 @@ concept code_unit_input_iterator = Zeus::input_iterator_of<Iterator, CodeUnit>;
  */
 [[nodiscard]] constexpr bool is_ascii(CodeUnit code_unit) noexcept {
     // Check if format is in 0xxx xxxx
-    // NOLINTNEXTLINE(*-magic-numbers)
-    return (code_unit & 0x80U) == 0x00U;
+    return (code_unit & 0x80U) == 0x00U; // NOLINT(*-magic-numbers)
 }
 
 /**
@@ -73,25 +75,14 @@ concept code_unit_input_iterator = Zeus::input_iterator_of<Iterator, CodeUnit>;
 }
 
 /**
- * Returns the *possible* size of the UTF-8 character based on the first
- * byte/code unit.
+ * Checks if the given UTF-8 code unit is a leading byte.
  *
- * @note This does not mean the following bytes are continuation bytes, if there
- * are any, will be valid.
+ * @param code_unit The code unit to check
  *
- * @param code_unit The UTF-8 code unit to check
- *
- * @return The size of the UTF-8 character based on the code unit if valid,
- * otherwise std::nullopt
+ * @return True if the given code unit is a leading byte, otherwise false
  */
-[[nodiscard]] constexpr std::optional<Zeus::ssize> peek_char_size(
-    CodeUnit code_unit) noexcept {
-    if (is_ascii(code_unit))            return 1;
-    if ((code_unit & 0xE0U) == 0xC0U)   return 2;
-    if ((code_unit & 0xF0U) == 0xE0U)   return 3;
-    if ((code_unit & 0xF8U) == 0xF0U)   return 4;
-    
-    return std::nullopt;
+[[nodiscard]] constexpr bool is_leading_byte(CodeUnit code_unit) noexcept {
+    return code_unit >= g_minLeadingByte && code_unit <= g_maxLeadingByte;
 }
 
 /**
@@ -110,14 +101,8 @@ concept code_unit_input_iterator = Zeus::input_iterator_of<Iterator, CodeUnit>;
     if ((code_unit & 0xF8U) == 0xF0U)   return 4;
     // NOLINTEND(*-magic-numbers)
 
-    // TODO(tristan): Replace with ZEUS_PRECONDITION
-    // Programmer error - throw exception
     throw std::invalid_argument{
         "The given UTF-8 code unit is not a leading byte."};
-}
-
-[[nodiscard]] constexpr bool is_leading_byte(CodeUnit code_unit) noexcept {
-    return Zeus::UTF8::peek_char_size(code_unit).has_value();
 }
 
 /**
@@ -130,8 +115,7 @@ concept code_unit_input_iterator = Zeus::input_iterator_of<Iterator, CodeUnit>;
  * @return True if a continuation byte, otherwise false
  */
 [[nodiscard]] constexpr bool is_continuation_byte(CodeUnit code_unit) noexcept {
-    // NOLINTNEXTLINE(*-magic-numbers)
-    return (code_unit & 0xC0U) == 0x80U;
+    return (code_unit & 0xC0U) == 0x80U; // NOLINT(*-magic-numbers)
 }
 
 /**
@@ -143,8 +127,7 @@ concept code_unit_input_iterator = Zeus::input_iterator_of<Iterator, CodeUnit>;
  * otherwise false
  */
 [[nodiscard]] constexpr bool is_valid_byte(CodeUnit code_unit) noexcept {
-    return Zeus::UTF8::is_continuation_byte(code_unit) ||
-           Zeus::UTF8::is_leading_byte(code_unit);
+    return is_continuation_byte(code_unit) || is_leading_byte(code_unit);
 }
 
 /**
@@ -157,6 +140,27 @@ concept code_unit_input_iterator = Zeus::input_iterator_of<Iterator, CodeUnit>;
  */
 [[nodiscard]] constexpr bool is_invalid_byte(CodeUnit code_unit) noexcept {
     return !is_valid_byte(code_unit);
+}
+
+/**
+ * Returns the *possible* size of the UTF-8 character based on the first
+ * byte/code unit.
+ *
+ * @note This does not mean the following continuation bytes, if there are any,
+ * will be valid.
+ *
+ * @param code_unit The UTF-8 code unit to check
+ *
+ * @return The size of the UTF-8 character based on the code unit if valid,
+ * otherwise std::nullopt
+ */
+[[nodiscard]] constexpr std::optional<Zeus::i8> peek_char_size(
+    CodeUnit code_unit) noexcept {
+    if (is_leading_byte(code_unit)) {
+        return leading_byte_size(code_unit);
+    }
+    
+    return std::nullopt;
 }
 
 }  // namespace cpp20_v1
