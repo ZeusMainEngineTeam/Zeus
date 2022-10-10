@@ -126,13 +126,14 @@ class CodePoint {
     /**
      * CodePoint three-way comparison.
      */
-    [[nodiscard]] constexpr auto operator<=>(CodePoint const&) const = default;
+    [[nodiscard]] constexpr auto operator<=>(CodePoint const&) const noexcept =
+        default;
 
     /**
      * Compares this Unicode code point against the given code point.
      */
-    [[nodiscard]] constexpr bool operator==(
-        CodePoint const& other) const noexcept = default;
+    [[nodiscard]] constexpr bool operator==(CodePoint const&) const noexcept =
+        default;
 
     /**
      * Compares this Unicode code point against the given value.
