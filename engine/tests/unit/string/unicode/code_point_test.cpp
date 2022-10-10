@@ -44,9 +44,8 @@ TEST(CodePoint, valueConstructorFailure) {
 
 TEST(CodePoint, copyConstructor) {
     using Zeus::Unicode::CodePoint;
-    auto a = CodePoint{g_maxCodePoint};
-    ASSERT_TRUE(g_maxCodePoint == a);
-    //ASSERT_EQ(g_maxCodePoint, CodePoint{g_maxCodePoint});
+
+    ASSERT_EQ(g_maxCodePoint, CodePoint{g_maxCodePoint});
     ASSERT_EQ(g_minCodePoint, CodePoint{g_minCodePoint});
     ASSERT_EQ(g_zeroCodePoint, CodePoint{g_zeroCodePoint});
 }
